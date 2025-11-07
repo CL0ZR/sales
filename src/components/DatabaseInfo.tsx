@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { formatGregorianDateTime } from '@/utils/dateFormat';
 
 interface DatabaseInfoData {
   database: {
@@ -149,7 +150,7 @@ export default function DatabaseInfo() {
           <div className="bg-white p-3 rounded-lg border border-blue-100">
             <p className="text-xs text-blue-600">آخر تعديل</p>
             <p className="font-semibold text-blue-800 text-xs">
-              {new Date(dbInfo.database.lastModified).toLocaleString('ar-SA')}
+              {formatGregorianDateTime(dbInfo.database.lastModified)}
             </p>
           </div>
         </div>

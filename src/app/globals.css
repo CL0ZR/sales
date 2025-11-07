@@ -16,7 +16,7 @@
   --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
   --muted: #f8fafc;
-  --muted-foreground: #64748b;
+  --muted-foreground: #575757;
   --accent: #f1f5f9;
   --accent-foreground: #0f172a;
   --destructive: #ef4444;
@@ -217,12 +217,12 @@ body {
   body {
     @apply text-foreground;
   }
-  
+
   /* Force light mode styles */
   .dark, [data-theme="dark"] {
     display: none !important;
   }
-  
+
   /* Ensure all components use light theme */
   * {
     color-scheme: light !important;

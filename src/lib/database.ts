@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import { getDatabasePath, getBackupPath, getExportPath, getBackupFileName } from '@/config/database';
-import { Product, Category, Sale } from '@/types';
+import { Product, Category, Sale, Return } from '@/types';
 
 let db: Database.Database | null = null;
 
@@ -65,7 +65,7 @@ function createTables(database: Database.Database) {
       id TEXT PRIMARY KEY,
       username TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      role TEXT CHECK(role IN ('admin', 'user')) DEFAULT 'user',
+      role TEXT CHECK(role IN ('admin', 'assistant-admin', 'user')) DEFAULT 'user',
       fullName TEXT,
       email TEXT,
       phone TEXT,
@@ -103,9 +103,10 @@ function createTables(database: Database.Database) {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT,
-      category TEXT NOT NULL,
+      category TEXT,
       subcategory TEXT,
       wholesalePrice REAL NOT NULL,
+      wholesaleCostPrice REAL DEFAULT 0,
       salePrice REAL NOT NULL,
       discount REAL DEFAULT 0,
       measurementType TEXT DEFAULT 'quantity' CHECK(measurementType IN ('quantity', 'weight')),
@@ -127,6 +128,7 @@ function createTables(database: Database.Database) {
     CREATE TABLE IF NOT EXISTS sales (
       id TEXT PRIMARY KEY,
       productId TEXT NOT NULL,
+      saleType TEXT DEFAULT 'retail' CHECK(saleType IN ('retail', 'wholesale')),
       quantity INTEGER NOT NULL DEFAULT 0,
       weight REAL,
       weightUnit TEXT CHECK(weightUnit IN ('kg', 'g', NULL)),
@@ -135,10 +137,76 @@ function createTables(database: Database.Database) {
       discount REAL DEFAULT 0,
       finalPrice REAL NOT NULL,
       customerName TEXT,
-      customerPhone TEXT,
-      paymentMethod TEXT CHECK(paymentMethod IN ('cash', 'card', 'transfer')),
+      paymentMethod TEXT CHECK(paymentMethod IN ('cash', 'debt')),
+      debtCustomerId TEXT,
+      debtId TEXT,
       saleDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (productId) REFERENCES products(id),
+      FOREIGN KEY (debtCustomerId) REFERENCES debt_customers(id),
+      FOREIGN KEY (debtId) REFERENCES debts(id)
+    )
+  `);
+
+  // Returns table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS returns (
+      id TEXT PRIMARY KEY,
+      saleId TEXT NOT NULL,
+      productId TEXT NOT NULL,
+      returnedQuantity INTEGER DEFAULT 0,
+      returnedWeight REAL,
+      weightUnit TEXT CHECK(weightUnit IN ('kg', 'g', NULL)),
+      unitPrice REAL NOT NULL,
+      totalRefund REAL NOT NULL,
+      reason TEXT,
+      returnDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+      processedBy TEXT,
+      FOREIGN KEY (saleId) REFERENCES sales(id),
       FOREIGN KEY (productId) REFERENCES products(id)
+    )
+  `);
+
+  // Debt Customers table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS debt_customers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      address TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Debts table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS debts (
+      id TEXT PRIMARY KEY,
+      saleId TEXT NOT NULL,
+      customerId TEXT NOT NULL,
+      totalAmount REAL NOT NULL,
+      amountPaid REAL DEFAULT 0,
+      amountRemaining REAL NOT NULL,
+      status TEXT CHECK(status IN ('unpaid', 'partial', 'paid')) DEFAULT 'unpaid',
+      dueDate DATETIME,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (saleId) REFERENCES sales(id),
+      FOREIGN KEY (customerId) REFERENCES debt_customers(id)
+    )
+  `);
+
+  // Debt Payments table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS debt_payments (
+      id TEXT PRIMARY KEY,
+      debtId TEXT NOT NULL,
+      amount REAL NOT NULL,
+      paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+      paymentMethod TEXT CHECK(paymentMethod IN ('cash', 'card', 'transfer')),
+      notes TEXT,
+      createdBy TEXT,
+      FOREIGN KEY (debtId) REFERENCES debts(id) ON DELETE CASCADE
     )
   `);
 
@@ -150,7 +218,189 @@ function createTables(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_products_quantity ON products(quantity);
     CREATE INDEX IF NOT EXISTS idx_sales_date ON sales(saleDate);
     CREATE INDEX IF NOT EXISTS idx_sales_product ON sales(productId);
+    CREATE INDEX IF NOT EXISTS idx_sales_type ON sales(saleType);
+    CREATE INDEX IF NOT EXISTS idx_sales_payment_method ON sales(paymentMethod);
+    CREATE INDEX IF NOT EXISTS idx_returns_date ON returns(returnDate);
+    CREATE INDEX IF NOT EXISTS idx_returns_product ON returns(productId);
+    CREATE INDEX IF NOT EXISTS idx_returns_sale ON returns(saleId);
+    CREATE INDEX IF NOT EXISTS idx_debt_customers_name ON debt_customers(name);
+    CREATE INDEX IF NOT EXISTS idx_debt_customers_phone ON debt_customers(phone);
+    CREATE INDEX IF NOT EXISTS idx_debts_customer ON debts(customerId);
+    CREATE INDEX IF NOT EXISTS idx_debts_sale ON debts(saleId);
+    CREATE INDEX IF NOT EXISTS idx_debts_status ON debts(status);
+    CREATE INDEX IF NOT EXISTS idx_debt_payments_debt ON debt_payments(debtId);
+    CREATE INDEX IF NOT EXISTS idx_debt_payments_date ON debt_payments(paymentDate);
   `);
+}
+
+// Migration: Convert wholesaleProfit to wholesaleCostPrice
+function migrateWholesalePricing(database: Database.Database) {
+  try {
+    // Check if wholesaleProfit column exists
+    const tableInfo = database.prepare("PRAGMA table_info(products)").all() as Array<{ name: string }>;
+    const hasWholesaleProfit = tableInfo.some(col => col.name === 'wholesaleProfit');
+    const hasWholesaleCostPrice = tableInfo.some(col => col.name === 'wholesaleCostPrice');
+
+    if (hasWholesaleProfit && !hasWholesaleCostPrice) {
+      console.log('🔄 Migrating wholesale pricing model...');
+
+      // Add new column
+      database.exec('ALTER TABLE products ADD COLUMN wholesaleCostPrice REAL DEFAULT 0');
+
+      // Migrate data:
+      // 1. wholesaleCostPrice = old wholesalePrice (the actual cost)
+      // 2. wholesalePrice = wholesalePrice + wholesaleProfit (to keep customer price same)
+      database.exec(`
+        UPDATE products
+        SET
+          wholesaleCostPrice = wholesalePrice,
+          wholesalePrice = wholesalePrice + COALESCE(wholesaleProfit, 0)
+      `);
+
+      console.log('✅ Wholesale pricing migration completed');
+    }
+  } catch (error) {
+    console.error('⚠️ Migration warning:', error);
+    // Don't throw - migration is optional for new databases
+  }
+}
+
+// Migration: Add debt tracking columns to sales table
+function migrateDebtTracking(database: Database.Database) {
+  try {
+    // Check if debt tracking columns exist in sales table
+    const tableInfo = database.prepare("PRAGMA table_info(sales)").all() as Array<{ name: string }>;
+    const hasDebtCustomerId = tableInfo.some(col => col.name === 'debtCustomerId');
+    const hasDebtId = tableInfo.some(col => col.name === 'debtId');
+
+    if (!hasDebtCustomerId || !hasDebtId) {
+      console.log('🔄 Adding debt tracking columns to sales table...');
+
+      if (!hasDebtCustomerId) {
+        database.exec('ALTER TABLE sales ADD COLUMN debtCustomerId TEXT');
+      }
+
+      if (!hasDebtId) {
+        database.exec('ALTER TABLE sales ADD COLUMN debtId TEXT');
+      }
+
+      console.log('✅ Debt tracking migration completed');
+    }
+  } catch (error) {
+    console.error('⚠️ Debt tracking migration warning:', error);
+    // Don't throw - migration is optional for new databases
+  }
+}
+
+// Migration: Update payment methods CHECK constraint from card/transfer to debt
+function migratePaymentMethods(database: Database.Database) {
+  try {
+    // Check if sales table has old constraint with 'card' or 'transfer'
+    const tableSQL = database.prepare(
+      "SELECT sql FROM sqlite_master WHERE type='table' AND name='sales'"
+    ).get() as { sql: string } | undefined;
+
+    if (tableSQL && (tableSQL.sql.includes("'card'") || tableSQL.sql.includes("'transfer'"))) {
+      console.log('🔄 Migrating payment methods constraint from (cash, card, transfer) to (cash, debt)...');
+
+      // SQLite doesn't allow modifying CHECK constraints, so we need to recreate the table
+      database.exec(`
+        -- Create new sales table with correct constraint
+        CREATE TABLE sales_new (
+          id TEXT PRIMARY KEY,
+          productId TEXT NOT NULL,
+          saleType TEXT DEFAULT 'retail' CHECK(saleType IN ('retail', 'wholesale')),
+          quantity INTEGER NOT NULL DEFAULT 0,
+          weight REAL,
+          weightUnit TEXT CHECK(weightUnit IN ('kg', 'g', NULL)),
+          unitPrice REAL NOT NULL,
+          totalPrice REAL NOT NULL,
+          discount REAL DEFAULT 0,
+          finalPrice REAL NOT NULL,
+          customerName TEXT,
+          paymentMethod TEXT CHECK(paymentMethod IN ('cash', 'debt')),
+          debtCustomerId TEXT,
+          debtId TEXT,
+          saleDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (productId) REFERENCES products(id),
+          FOREIGN KEY (debtCustomerId) REFERENCES debt_customers(id),
+          FOREIGN KEY (debtId) REFERENCES debts(id)
+        );
+
+        -- Copy existing data, converting old payment methods to new ones
+        INSERT INTO sales_new (
+          id, productId, saleType, quantity, weight, weightUnit,
+          unitPrice, totalPrice, discount, finalPrice,
+          customerName, paymentMethod, debtCustomerId, debtId, saleDate
+        )
+        SELECT
+          id, productId, saleType, quantity, weight, weightUnit,
+          unitPrice, totalPrice, discount, finalPrice,
+          customerName,
+          CASE
+            WHEN paymentMethod = 'cash' THEN 'cash'
+            WHEN paymentMethod IN ('card', 'transfer') THEN 'cash'
+            ELSE 'cash'
+          END as paymentMethod,
+          debtCustomerId, debtId, saleDate
+        FROM sales;
+
+        -- Drop old table
+        DROP TABLE sales;
+
+        -- Rename new table to sales
+        ALTER TABLE sales_new RENAME TO sales;
+
+        -- Recreate indexes
+        CREATE INDEX IF NOT EXISTS idx_sales_date ON sales(saleDate);
+        CREATE INDEX IF NOT EXISTS idx_sales_product ON sales(productId);
+        CREATE INDEX IF NOT EXISTS idx_sales_type ON sales(saleType);
+        CREATE INDEX IF NOT EXISTS idx_sales_payment_method ON sales(paymentMethod);
+      `);
+
+      console.log('✅ Payment methods migration completed - old payment methods converted to cash');
+    }
+  } catch (error) {
+    console.error('⚠️ Payment methods migration warning:', error);
+    // Don't throw - migration is optional for new databases
+  }
+}
+
+// Migration: Populate customer names in existing debt sales
+function migrateDebtSalesCustomerNames(database: Database.Database) {
+  try {
+    // Find all debt sales that have debtCustomerId but no customerName
+    const salesNeedingUpdate = database.prepare(`
+      SELECT s.id, s.debtCustomerId
+      FROM sales s
+      WHERE s.paymentMethod = 'debt'
+        AND s.debtCustomerId IS NOT NULL
+        AND (s.customerName IS NULL OR s.customerName = '')
+    `).all() as Array<{ id: string; debtCustomerId: string }>;
+
+    if (salesNeedingUpdate.length > 0) {
+      console.log(`🔄 Updating ${salesNeedingUpdate.length} debt sales with customer names...`);
+
+      let updated = 0;
+      for (const sale of salesNeedingUpdate) {
+        const customer = database.prepare(
+          'SELECT name FROM debt_customers WHERE id = ?'
+        ).get(sale.debtCustomerId) as { name: string } | undefined;
+
+        if (customer) {
+          database.prepare(
+            'UPDATE sales SET customerName = ? WHERE id = ?'
+          ).run(customer.name, sale.id);
+          updated++;
+        }
+      }
+
+      console.log(`✅ Updated ${updated} debt sales with customer names`);
+    }
+  } catch (error) {
+    console.error('⚠️ Debt sales customer names migration warning:', error);
+    // Don't throw - migration is optional
+  }
 }
 
 // الحصول على اتصال قاعدة البيانات
@@ -159,22 +409,26 @@ export function getDatabase(): Database.Database {
     try {
       ensureDirectoriesExist();
       const dbPath = getDatabasePath();
-      
+
       console.log(`📁 Database path: ${dbPath}`);
-      
+
       db = new Database(dbPath);
       db.pragma('journal_mode = WAL'); // تحسين الأداء
       db.pragma('foreign_keys = ON'); // تفعيل القيود الخارجية
-      
+
       createTables(db);
-      
+      migrateWholesalePricing(db);
+      migrateDebtTracking(db);
+      migratePaymentMethods(db);
+      migrateDebtSalesCustomerNames(db);
+
       console.log('✅ Database initialized successfully');
     } catch (error) {
       console.error('❌ Database initialization failed:', error);
       throw error;
     }
   }
-  
+
   return db;
 }
 
@@ -272,10 +526,14 @@ export function getDatabaseInfo() {
     const productsCount = database.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
     const categoriesCount = database.prepare('SELECT COUNT(*) as count FROM categories').get() as { count: number };
     const salesCount = database.prepare('SELECT COUNT(*) as count FROM sales').get() as { count: number };
-    
+    const returnsCount = database.prepare('SELECT COUNT(*) as count FROM returns').get() as { count: number };
+    const debtCustomersCount = database.prepare('SELECT COUNT(*) as count FROM debt_customers').get() as { count: number };
+    const debtsCount = database.prepare('SELECT COUNT(*) as count FROM debts').get() as { count: number };
+    const debtPaymentsCount = database.prepare('SELECT COUNT(*) as count FROM debt_payments').get() as { count: number };
+
     const dbPath = getDatabasePath();
     const stats = fs.statSync(dbPath);
-    
+
     return {
       path: dbPath,
       size: stats.size,
@@ -284,6 +542,10 @@ export function getDatabaseInfo() {
         products: productsCount.count,
         categories: categoriesCount.count,
         sales: salesCount.count,
+        returns: returnsCount.count,
+        debtCustomers: debtCustomersCount.count,
+        debts: debtsCount.count,
+        debtPayments: debtPaymentsCount.count,
       },
     };
   } catch (error) {

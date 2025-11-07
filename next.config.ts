@@ -7,6 +7,9 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig: NextConfig = {
+  // Output standalone for production builds
+  output: 'standalone',
+
   // Support for better-sqlite3 in API routes
   webpack: (config, { isServer }) => {
     if (isServer) {

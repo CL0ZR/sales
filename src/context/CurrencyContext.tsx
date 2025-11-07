@@ -58,8 +58,8 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       // Fallback formatting if Intl doesn't support the currency
       const symbol = currencyInfo.symbol;
-      const formattedAmount = currency === 'IQD' 
-        ? Math.round(amount).toLocaleString('ar-IQ')
+      const formattedAmount = currency === 'IQD'
+        ? Math.round(amount).toLocaleString('en-US')
         : amount.toFixed(2);
       
       return currency === 'USD' 

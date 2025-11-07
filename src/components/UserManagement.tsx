@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Users,
   Plus,
@@ -10,9 +11,11 @@ import {
   User as UserIcon,
   Eye,
   EyeOff,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { User, UserRole } from "@/types";
+import { formatGregorianDateTime } from "@/utils/dateFormat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +45,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import DatabaseMigration from "@/components/DatabaseMigration";
 
 export default function UserManagement() {
   const { isAdmin } = useAuth();
@@ -173,19 +177,29 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Database Migration Notice */}
+      <DatabaseMigration />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">إدارة المستخدمين</h2>
           <p className="text-gray-600">إنشاء وإدارة حسابات المستخدمين</p>
         </div>
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              إضافة مستخدم جديد
+        <div className="flex gap-2">
+          <Link href="/debt-book">
+            <Button variant="outline" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              إدارة دفتر الديون
             </Button>
-          </DialogTrigger>
+          </Link>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                إضافة مستخدم جديد
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>
@@ -260,6 +274,12 @@ export default function UserManagement() {
                         مدير النظام
                       </div>
                     </SelectItem>
+                    <SelectItem value="assistant-admin">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-amber-500" />
+                        مساعد مدير
+                      </div>
+                    </SelectItem>
                     <SelectItem value="user">
                       <div className="flex items-center gap-2">
                         <UserIcon className="h-4 w-4 text-blue-500" />
@@ -293,6 +313,7 @@ export default function UserManagement() {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
 
       {/* Users Table */}
       <Card>
@@ -327,6 +348,8 @@ export default function UserManagement() {
                         <div className="flex items-center gap-2">
                           {user.role === "admin" ? (
                             <Shield className="h-4 w-4 text-red-500" />
+                          ) : user.role === "assistant-admin" ? (
+                            <Shield className="h-4 w-4 text-amber-500" />
                           ) : (
                             <UserIcon className="h-4 w-4 text-blue-500" />
                           )}
@@ -336,16 +359,20 @@ export default function UserManagement() {
                       <TableCell className="text-right">
                         <Badge
                           variant={
-                            user.role === "admin" ? "destructive" : "default"
+                            user.role === "admin" ? "destructive" : user.role === "assistant-admin" ? "secondary" : "default"
                           }
                           className={
                             user.role === "admin"
                               ? "bg-red-100 text-red-700"
+                              : user.role === "assistant-admin"
+                              ? "bg-amber-100 text-amber-700"
                               : "bg-blue-100 text-blue-700"
                           }
                         >
                           {user.role === "admin"
                             ? "مدير النظام"
+                            : user.role === "assistant-admin"
+                            ? "مساعد مدير"
                             : "مستخدم عادي"}
                         </Badge>
                       </TableCell>
@@ -354,7 +381,7 @@ export default function UserManagement() {
                       </TableCell>
                       <TableCell className="text-right">
                         {user.lastLogin
-                          ? new Date(user.lastLogin).toLocaleString("ar-SA")
+                          ? formatGregorianDateTime(user.lastLogin)
                           : "لم يسجل دخول بعد"}
                       </TableCell>
                       <TableCell className="text-right">
