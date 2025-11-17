@@ -12,6 +12,7 @@ import {
   Users,
   LogOut,
   Shield,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,12 @@ const navigationItems = [
     path: "/products",
   },
   {
+    id: "debt-book",
+    name: "دفتر الديون",
+    icon: BookOpen,
+    path: "/debt-book",
+  },
+  {
     id: "reports",
     name: "التقارير",
     icon: TrendingUp,
@@ -61,7 +68,7 @@ const navigationItems = [
 
 function NavigationContent() {
   const pathname = usePathname();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isAssistantAdmin } = useAuth();
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
 
   return (
@@ -77,6 +84,8 @@ function NavigationContent() {
             <div className="flex items-center gap-2">
               {user.role === "admin" ? (
                 <Shield className="h-4 w-4 text-red-500" />
+              ) : user.role === "assistant-admin" ? (
+                <Shield className="h-4 w-4 text-amber-500" />
               ) : (
                 <Users className="h-4 w-4 text-blue-500" />
               )}
@@ -84,10 +93,10 @@ function NavigationContent() {
                 {user.fullName || user.username}
               </span>
               <Badge
-                variant={user.role === "admin" ? "destructive" : "default"}
-                className="text-xs"
+                variant={user.role === "admin" ? "destructive" : user.role === "assistant-admin" ? "secondary" : "default"}
+                className={`text-xs ${user.role === "assistant-admin" ? "bg-amber-100 text-amber-700" : ""}`}
               >
-                {user.role === "admin" ? "مدير" : "مستخدم"}
+                {user.role === "admin" ? "مدير" : user.role === "assistant-admin" ? "مساعد مدير" : "مستخدم"}
               </Badge>
             </div>
           </div>
@@ -97,28 +106,41 @@ function NavigationContent() {
       {/* Navigation Links */}
       <div className="flex-1 p-4">
         <nav className="space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.path;
+          {navigationItems
+            .filter((item) => {
+              // Filter navigation items based on user role
+              if (user?.role === 'assistant-admin') {
+                // Assistant admin: Sales, Debt Book, and Reports
+                return ['products', 'debt-book', 'reports'].includes(item.id);
+              } else if (user?.role === 'user') {
+                // Regular users: Sales only
+                return ['products'].includes(item.id);
+              }
+              // Admin can access all items
+              return true;
+            })
+            .map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.path;
 
-            return (
-              <Link
-                key={item.id}
-                href={item.path}
-                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
-                      : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-900"
-                  }
-                `}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{item.name}</span>
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.id}
+                  href={item.path}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                    ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
+                        : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-900"
+                    }
+                  `}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
         </nav>
       </div>
 

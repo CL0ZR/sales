@@ -23,15 +23,15 @@ export function addProduct(product: Omit<Product, 'id' | 'createdAt' | 'updatedA
   const stmt = db.prepare(`
     INSERT INTO products (
       id, name, description, category, subcategory,
-      wholesalePrice, salePrice, discount,
+      wholesalePrice, wholesaleCostPrice, salePrice, discount,
       measurementType, quantity, minQuantity, weightUnit, weight, minWeight,
       barcode, currency, imageUrl, createdAt, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
     id, product.name, product.description, product.category, product.subcategory,
-    product.wholesalePrice, product.salePrice, product.discount,
+    product.wholesalePrice, product.wholesaleCostPrice || 0, product.salePrice, product.discount,
     product.measurementType, product.quantity, product.minQuantity,
     product.weightUnit, product.weight, product.minWeight,
     product.barcode, product.currency, product.imageUrl, now, now
@@ -53,7 +53,7 @@ export function updateProduct(product: Product): Product {
   const stmt = db.prepare(`
     UPDATE products SET
       name = ?, description = ?, category = ?, subcategory = ?,
-      wholesalePrice = ?, salePrice = ?, discount = ?,
+      wholesalePrice = ?, wholesaleCostPrice = ?, salePrice = ?, discount = ?,
       measurementType = ?, quantity = ?, minQuantity = ?, weightUnit = ?, weight = ?, minWeight = ?,
       barcode = ?, currency = ?, imageUrl = ?, updatedAt = ?
     WHERE id = ?
@@ -61,7 +61,7 @@ export function updateProduct(product: Product): Product {
 
   stmt.run(
     product.name, product.description, product.category, product.subcategory,
-    product.wholesalePrice, product.salePrice, product.discount,
+    product.wholesalePrice, product.wholesaleCostPrice || 0, product.salePrice, product.discount,
     product.measurementType, product.quantity, product.minQuantity,
     product.weightUnit, product.weight, product.minWeight,
     product.barcode, product.currency, product.imageUrl, now, product.id
@@ -74,11 +74,36 @@ export function updateProduct(product: Product): Product {
 }
 
 // حذف منتج
-export function deleteProduct(id: string): boolean {
+export function deleteProduct(id: string): { success: boolean; error?: string } {
   const db = getDatabase();
+
+  // Check if product has any associated sales
+  const salesCheck = db.prepare('SELECT COUNT(*) as count FROM sales WHERE productId = ?').get(id) as { count: number };
+  if (salesCheck.count > 0) {
+    return {
+      success: false,
+      error: `لا يمكن حذف المنتج. يوجد ${salesCheck.count} عملية بيع مرتبطة بهذا المنتج. يجب حذف عمليات البيع أولاً.`
+    };
+  }
+
+  // Check if product has any associated returns
+  const returnsCheck = db.prepare('SELECT COUNT(*) as count FROM returns WHERE productId = ?').get(id) as { count: number };
+  if (returnsCheck.count > 0) {
+    return {
+      success: false,
+      error: `لا يمكن حذف المنتج. يوجد ${returnsCheck.count} عملية إرجاع مرتبطة بهذا المنتج. يجب حذف عمليات الإرجاع أولاً.`
+    };
+  }
+
+  // If no sales or returns, proceed with deletion
   const stmt = db.prepare('DELETE FROM products WHERE id = ?');
   const result = stmt.run(id);
-  return result.changes > 0;
+
+  if (result.changes > 0) {
+    return { success: true };
+  } else {
+    return { success: false, error: 'المنتج غير موجود' };
+  }
 }
 
 // البحث عن منتج

@@ -38,16 +38,16 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
-    
-    const deleted = deleteProduct(id);
-    if (deleted) {
+
+    const result = deleteProduct(id);
+    if (result.success) {
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: result.error || 'Product not found' }, { status: 400 });
     }
   } catch (error) {
     console.error('Error deleting product:', error);

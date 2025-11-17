@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllUsers, getUserById, createUser, deleteUser, changePassword } from '@/lib/queries/users';
+import { getAllUsers, getUserById, createUser, updateUser, deleteUser, changePassword } from '@/lib/queries/users';
 import { hashPassword } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -72,32 +72,38 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { id, password } = await request.json();
+    const userData = await request.json();
 
-    if (!id || !password) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'User ID and password are required' 
+    if (!userData.id) {
+      return NextResponse.json({
+        success: false,
+        message: 'User ID is required'
       }, { status: 400 });
     }
 
-    const success = await changePassword(id, password);
-    if (!success) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Failure to change password' 
+    // Update user with the new updateUser function
+    const updatedUser = await updateUser(userData);
+
+    if (!updatedUser) {
+      return NextResponse.json({
+        success: false,
+        message: 'Failed to update user'
       }, { status: 500 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Password changed successfully' 
+    // Remove password from response
+    const { password, ...userWithoutPassword } = updatedUser;
+
+    return NextResponse.json({
+      success: true,
+      message: 'User updated successfully',
+      user: userWithoutPassword
     });
   } catch (error) {
-    console.error('Error changing password:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Failure to change password' 
+    console.error('Error updating user:', error);
+    return NextResponse.json({
+      success: false,
+      message: 'Failed to update user'
     }, { status: 500 });
   }
 }

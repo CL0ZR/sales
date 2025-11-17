@@ -21,12 +21,12 @@ export interface MeasurementInfo {
 export const MEASUREMENT_TYPES: Record<MeasurementType, Omit<MeasurementInfo, 'unit' | 'type'>> = {
   quantity: {
     name: 'Quantity',
-    nameAr: 'قطعة',
-    symbol: 'قطعة',
+    nameAr: 'pcs',
+    symbol: 'pcs',
   },
   weight: {
     name: 'Weight',
-    nameAr: 'وزن',
+    nameAr: 'weight',
     symbol: '',
   },
 };
@@ -36,15 +36,15 @@ export const WEIGHT_UNITS: Record<WeightUnit, MeasurementInfo> = {
     type: 'weight',
     unit: 'kg',
     name: 'Kilogram',
-    nameAr: 'كيلوجرام',
-    symbol: 'كجم',
+    nameAr: 'kg',
+    symbol: 'kg',
   },
   g: {
     type: 'weight',
     unit: 'g',
     name: 'Gram',
-    nameAr: 'جرام',
-    symbol: 'جم',
+    nameAr: 'g',
+    symbol: 'g',
   },
 };
 
@@ -55,8 +55,9 @@ export interface Product {
   category: string;
   subcategory?: string;
   wholesalePrice: number;
+  wholesaleCostPrice?: number; // Purchase cost price for wholesale (profit = wholesalePrice - wholesaleCostPrice)
   salePrice: number;
-  discount: number;
+  discount: number; // Fixed discount amount (not percentage)
   // Measurement fields
   measurementType: MeasurementType;
   // For quantity-based products
@@ -88,10 +89,13 @@ export interface Subcategory {
   categoryId: string;
 }
 
+export type SaleType = 'retail' | 'wholesale';
+
 export interface Sale {
   id: string;
   productId: string;
   product: Product;
+  saleType: SaleType; // Type of sale: retail or wholesale
   // Quantity or weight sold
   quantity: number;
   weight?: number;
@@ -99,13 +103,69 @@ export interface Sale {
   // Pricing
   unitPrice: number;
   totalPrice: number;
-  discount: number;
+  discount: number; // Fixed discount amount (not percentage)
   finalPrice: number;
   // Customer info
   customerName?: string;
-  customerPhone?: string;
   saleDate: Date;
+  paymentMethod: 'cash' | 'debt';
+  // Debt tracking
+  debtCustomerId?: string;
+  debtId?: string;
+}
+
+export interface Return {
+  id: string;
+  saleId: string;
+  productId: string;
+  product: Product;
+  // Quantity or weight returned
+  returnedQuantity: number;
+  returnedWeight?: number;
+  weightUnit?: WeightUnit;
+  // Pricing
+  unitPrice: number;
+  totalRefund: number;
+  // Additional info
+  reason?: string;
+  returnDate: Date;
+  processedBy?: string;
+}
+
+export interface DebtCustomer {
+  id: string;
+  name: string;
+  phone: string;
+  address?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type DebtStatus = 'unpaid' | 'partial' | 'paid';
+
+export interface Debt {
+  id: string;
+  saleId: string;
+  customerId: string;
+  customer?: DebtCustomer;
+  sale?: Sale;
+  totalAmount: number;
+  amountPaid: number;
+  amountRemaining: number;
+  status: DebtStatus;
+  dueDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DebtPayment {
+  id: string;
+  debtId: string;
+  amount: number;
+  paymentDate: Date;
   paymentMethod: 'cash' | 'card' | 'transfer';
+  notes?: string;
+  createdBy?: string;
 }
 
 export interface DashboardStats {
@@ -117,6 +177,17 @@ export interface DashboardStats {
   todaySales: number;
   todayRevenue: number;
   monthlyRevenue: number;
+  // Retail/Wholesale breakdown
+  retailSales: number;
+  wholesaleSales: number;
+  retailRevenue: number;
+  wholesaleRevenue: number;
+  retailProfit: number;
+  wholesaleProfit: number;
+  todayRetailSales: number;
+  todayWholesaleSales: number;
+  todayRetailRevenue: number;
+  todayWholesaleRevenue: number;
   topSellingProducts: Array<{
     product: Product;
     totalSold: number;
@@ -154,19 +225,19 @@ export type NavigationItem = {
 export const CURRENCIES: Record<Currency, CurrencyInfo> = {
   IQD: {
     code: 'IQD',
-    name: 'الدينار العراقي',
-    symbol: 'د.ع',
-    locale: 'ar-IQ',
+    name: 'Iraqi Dinar',
+    symbol: 'IQD',
+    locale: 'en-US',
   },
   USD: {
     code: 'USD',
-    name: 'الدولار الأمريكي',
+    name: 'US Dollar',
     symbol: '$',
     locale: 'en-US',
   },
 };
 
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'assistant-admin' | 'user';
 
 export interface User {
   id: string;

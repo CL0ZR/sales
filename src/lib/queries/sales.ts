@@ -27,16 +27,16 @@ export function addSale(sale: Omit<Sale, 'id' | 'saleDate'>): Sale {
 
   const stmt = db.prepare(`
     INSERT INTO sales (
-      id, productId, quantity, weight, weightUnit,
+      id, productId, saleType, quantity, weight, weightUnit,
       unitPrice, totalPrice, discount, finalPrice,
-      customerName, customerPhone, paymentMethod, saleDate
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      customerName, paymentMethod, debtCustomerId, debtId, saleDate
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
-    id, sale.productId, sale.quantity, sale.weight, sale.weightUnit,
+    id, sale.productId, sale.saleType, sale.quantity, sale.weight, sale.weightUnit,
     sale.unitPrice, sale.totalPrice, sale.discount, sale.finalPrice,
-    sale.customerName, sale.customerPhone, sale.paymentMethod, now
+    sale.customerName, sale.paymentMethod, sale.debtCustomerId || null, sale.debtId || null, now
   );
 
   return {
@@ -44,6 +44,35 @@ export function addSale(sale: Omit<Sale, 'id' | 'saleDate'>): Sale {
     id,
     saleDate: new Date(now),
   };
+}
+
+// تحديث مبيعة (لربط معرف الدين بعد إنشائه)
+export function updateSale(saleId: string, updates: Partial<Pick<Sale, 'debtId'>>): Sale | null {
+  const db = getDatabase();
+
+  // Build dynamic UPDATE query
+  const updateFields: string[] = [];
+  const values: (string | null)[] = [];
+
+  if (updates.debtId !== undefined) {
+    updateFields.push('debtId = ?');
+    values.push(updates.debtId || null);
+  }
+
+  if (updateFields.length === 0) {
+    return getSaleById(saleId);
+  }
+
+  const stmt = db.prepare(`
+    UPDATE sales
+    SET ${updateFields.join(', ')}
+    WHERE id = ?
+  `);
+
+  values.push(saleId);
+  stmt.run(...values);
+
+  return getSaleById(saleId);
 }
 
 // حذف مبيعة

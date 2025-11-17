@@ -1,31 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Navigation from './Navigation';
 import LoginForm from './LoginForm';
 import FirstTimeSetupNotice from './FirstTimeSetupNotice';
+import LottieLoader from './LottieLoader';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Redirect users based on role when they access unauthorized pages
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Define allowed paths for each role
+      const allowedPaths: Record<string, string[]> = {
+        'admin': ['/', '/warehouse', '/products', '/debt-book', '/reports'],
+        'assistant-admin': ['/products', '/debt-book', '/reports'],
+        'user': ['/products']
+      };
+
+      const userAllowedPaths = allowedPaths[user.role] || [];
+
+      // If current path is not allowed for this role, redirect to /products
+      if (!userAllowedPaths.includes(pathname)) {
+        router.replace('/products');
+      }
+    }
+  }, [isAuthenticated, user, pathname, router]);
 
   // عرض شاشة تحميل أثناء فحص حالة المصادقة
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">نظام إدارة المستودعات</h2>
-          <p className="text-gray-600">جاري التحميل...</p>
-        </div>
-      </div>
-    );
+    return <LottieLoader />;
   }
 
   // إذا لم يكن المستخدم مسجل دخول، عرض صفحة تسجيل الدخول

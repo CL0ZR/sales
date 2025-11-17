@@ -24,7 +24,7 @@ export function formatMeasurement(
  */
 export function getMeasurementUnit(product: Product): string {
   if (product.measurementType === 'quantity') {
-    return 'قطعة';
+    return 'pcs';
   } else {
     return WEIGHT_UNITS[product.weightUnit || 'kg'].symbol;
   }
@@ -105,15 +105,15 @@ export function validateMeasurementValue(
   measurementType: MeasurementType
 ): { valid: boolean; error?: string } {
   if (value < 0) {
-    return { valid: false, error: 'القيمة يجب أن تكون موجبة' };
+    return { valid: false, error: 'Value must be positive' };
   }
 
   if (measurementType === 'quantity' && !Number.isInteger(value)) {
-    return { valid: false, error: 'الكمية يجب أن تكون رقم صحيح' };
+    return { valid: false, error: 'Quantity must be a whole number' };
   }
 
   if (measurementType === 'weight' && value === 0) {
-    return { valid: false, error: 'الوزن يجب أن يكون أكبر من صفر' };
+    return { valid: false, error: 'Weight must be greater than zero' };
   }
 
   return { valid: true };
@@ -165,11 +165,11 @@ export function getStockStatus(product: Product): {
   color: 'success' | 'warning' | 'danger';
 } {
   if (isOutOfStock(product)) {
-    return { text: 'نفد المخزون', color: 'danger' };
+    return { text: 'إنتهى من المخزون', color: 'danger' };
   }
 
   if (isLowStock(product)) {
-    return { text: 'مخزون قليل', color: 'warning' };
+    return { text: 'قليل من المخزون', color: 'warning' };
   }
 
   return { text: 'متوفر', color: 'success' };
@@ -182,8 +182,8 @@ export function getInputStep(measurementType: MeasurementType, weightUnit?: Weig
   if (measurementType === 'quantity') {
     return '1'; // Whole numbers only
   } else {
-    // For weight, allow decimals
-    return weightUnit === 'g' ? '0.001' : '0.01'; // More precision for grams
+    // For weight, allow any decimal or whole number
+    return 'any'; // Flexible input - allows 5, 5.5, 5.25, etc.
   }
 }
 

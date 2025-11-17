@@ -5,7 +5,7 @@ export interface User {
   id: string;
   username: string;
   password: string; // مشفّر
-  role: 'admin' | 'user';
+  role: 'admin' | 'assistant-admin' | 'user';
   fullName?: string;
   email?: string;
   phone?: string;
@@ -48,7 +48,7 @@ export function getUserByUsername(username: string): User | null {
 export async function createUser(userData: {
   username: string;
   password: string; // سيتم تشفيرها
-  role?: 'admin' | 'user';
+  role?: 'admin' | 'assistant-admin' | 'user';
   fullName?: string;
   email?: string;
   phone?: string;
@@ -80,6 +80,71 @@ export async function createUser(userData: {
   );
 
   return getUserById(id)!;
+}
+
+/**
+ * تحديث بيانات مستخدم موجود
+ */
+export async function updateUser(userData: {
+  id: string;
+  username?: string;
+  password?: string; // اختياري - سيتم تشفيرها إذا تم توفيرها
+  role?: 'admin' | 'assistant-admin' | 'user';
+  fullName?: string;
+  email?: string;
+  phone?: string;
+}): Promise<User | null> {
+  const db = getDatabase();
+  const now = new Date().toISOString();
+
+  // Build dynamic UPDATE query based on provided fields
+  const updates: string[] = ['updatedAt = ?'];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const values: any[] = [now];
+
+  if (userData.username !== undefined) {
+    updates.push('username = ?');
+    values.push(userData.username);
+  }
+
+  if (userData.password !== undefined && userData.password !== '') {
+    const hashedPassword = await hashPassword(userData.password);
+    updates.push('password = ?');
+    values.push(hashedPassword);
+  }
+
+  if (userData.role !== undefined) {
+    updates.push('role = ?');
+    values.push(userData.role);
+  }
+
+  if (userData.fullName !== undefined) {
+    updates.push('fullName = ?');
+    values.push(userData.fullName || null);
+  }
+
+  if (userData.email !== undefined) {
+    updates.push('email = ?');
+    values.push(userData.email || null);
+  }
+
+  if (userData.phone !== undefined) {
+    updates.push('phone = ?');
+    values.push(userData.phone || null);
+  }
+
+  // Add userId at the end for WHERE clause
+  values.push(userData.id);
+
+  const stmt = db.prepare(`
+    UPDATE users
+    SET ${updates.join(', ')}
+    WHERE id = ?
+  `);
+
+  stmt.run(...values);
+
+  return getUserById(userData.id);
 }
 
 /**

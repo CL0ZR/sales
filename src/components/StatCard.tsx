@@ -14,14 +14,16 @@ interface StatCardProps {
     isPositive: boolean;
   };
   color?: 'primary' | 'success' | 'warning' | 'destructive';
+  onClick?: () => void;
 }
 
-export default function StatCard({ 
-  title, 
-  value, 
-  icon: Icon, 
-  trend, 
-  color = 'primary' 
+export default function StatCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  color = 'primary',
+  onClick
 }: StatCardProps) {
   const colorClasses = {
     primary: 'bg-blue-500 text-white shadow-blue-500/20',
@@ -31,7 +33,12 @@ export default function StatCard({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-0 bg-gradient-to-br from-white to-gray-50/50">
+    <Card
+      className={`hover:shadow-lg transition-all duration-200 border-0 bg-gradient-to-br from-white to-gray-50/50 ${
+        onClick ? 'cursor-pointer hover:scale-105' : ''
+      }`}
+      onClick={onClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-gray-600">{title}</p>

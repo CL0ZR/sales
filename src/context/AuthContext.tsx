@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   isAdmin: () => boolean;
+  isAssistantAdmin: () => boolean;
   isUser: () => boolean;
 }
 
@@ -22,6 +23,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // تحميل المستخدم من localStorage عند بدء التطبيق
   useEffect(() => {
+    const MIN_LOADING_TIME = 8000; // 8 seconds for full Lottie animation
+    const startTime = Date.now();
+
     const loadUser = () => {
       try {
         const savedUser = localStorage.getItem('warehouse_auth_user');
@@ -29,11 +33,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const userData = JSON.parse(savedUser);
           setUser(userData);
           setIsAuthenticated(true);
+
+          // Only show 8-second animation if user is logged in
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime);
+
+          setTimeout(() => {
+            setIsLoading(false);
+          }, remainingTime);
+        } else {
+          // No saved user, skip animation and show login form immediately
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error loading saved user:', error);
         localStorage.removeItem('warehouse_auth_user');
-      } finally {
         setIsLoading(false);
       }
     };
@@ -55,13 +69,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const result = await response.json();
 
       if (result.success) {
+        // Show loading animation for 8 seconds after successful login
+        setIsLoading(true);
+        const ANIMATION_DURATION = 8000; // 8 seconds
+
         setUser(result.user);
         setIsAuthenticated(true);
         localStorage.setItem('warehouse_auth_user', JSON.stringify(result.user));
-        
+
         // تحديث آخر تسجيل دخول
         await updateLastLogin(result.user.id);
-        
+
+        // Wait for full animation to complete before hiding loading screen
+        setTimeout(() => {
+          setIsLoading(false);
+        }, ANIMATION_DURATION);
+
         return { success: true, message: result.message || `مرحباً ${result.user.fullName || result.user.username}` };
       }
 
@@ -82,6 +105,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = (): boolean => {
     return user?.role === 'admin';
+  };
+
+  const isAssistantAdmin = (): boolean => {
+    return user?.role === 'assistant-admin';
   };
 
   const isUser = (): boolean => {
@@ -107,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     isAdmin,
+    isAssistantAdmin,
     isUser,
   };
 
