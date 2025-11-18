@@ -156,14 +156,6 @@ export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
         </Card>
       </div>
 
-      {/* Print Button */}
-      <div className="flex justify-end">
-        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
-          <Printer className="h-4 w-4" />
-          طباعة تقرير المبيعات
-        </Button>
-      </div>
-
       {/* Search and Filters */}
       <Card>
         <CardHeader>
@@ -208,6 +200,14 @@ export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Print Button */}
+      <div className="flex justify-end">
+        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          طباعة تقرير المبيعات
+        </Button>
+      </div>
 
       {/* Sales Table */}
       <Card>

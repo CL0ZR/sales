@@ -150,14 +150,6 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
         </Card>
       </div>
 
-      {/* Print Button */}
-      <div className="flex justify-end">
-        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
-          <Printer className="h-4 w-4" />
-          طباعة تقرير الإرجاعات
-        </Button>
-      </div>
-
       {/* Search */}
       <Card>
         <CardHeader>
@@ -172,6 +164,14 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
           />
         </CardContent>
       </Card>
+
+      {/* Print Button */}
+      <div className="flex justify-end">
+        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          طباعة تقرير الإرجاعات
+        </Button>
+      </div>
 
       {/* Returns Table */}
       <Card>
