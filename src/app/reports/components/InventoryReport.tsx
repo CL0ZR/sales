@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Package, AlertTriangle, CheckCircle, XCircle, TrendingDown } from 'lucide-react';
+import { Package, AlertTriangle, CheckCircle, XCircle, TrendingDown, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -17,9 +18,10 @@ import { formatMeasurement, isLowStock, isOutOfStock, getStockStatus } from '@/u
 
 interface InventoryReportProps {
   products: Product[];
+  onPrintClick: () => void;
 }
 
-export default function InventoryReport({ products }: InventoryReportProps) {
+export default function InventoryReport({ products, onPrintClick }: InventoryReportProps) {
   const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'good' | 'low' | 'out'>('all');
@@ -88,7 +90,7 @@ export default function InventoryReport({ products }: InventoryReportProps) {
   }, [filteredProducts]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
@@ -159,6 +161,14 @@ export default function InventoryReport({ products }: InventoryReportProps) {
         </Card>
       </div>
 
+      {/* Print Button */}
+      <div className="flex justify-end">
+        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          طباعة تقرير المخزون
+        </Button>
+      </div>
+
       {/* Search and Filters */}
       <Card>
         <CardHeader>
@@ -175,7 +185,7 @@ export default function InventoryReport({ products }: InventoryReportProps) {
 
             <div className="space-y-2">
               <Label>حالة المخزون</Label>
-              <Select value={stockFilter} onValueChange={(value: any) => setStockFilter(value)}>
+              <Select value={stockFilter} onValueChange={(value) => setStockFilter(value as 'all' | 'good' | 'low' | 'out')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -190,7 +200,7 @@ export default function InventoryReport({ products }: InventoryReportProps) {
 
             <div className="space-y-2">
               <Label>نوع القياس</Label>
-              <Select value={measurementFilter} onValueChange={(value: any) => setMeasurementFilter(value)}>
+              <Select value={measurementFilter} onValueChange={(value) => setMeasurementFilter(value as 'all' | 'quantity' | 'weight')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

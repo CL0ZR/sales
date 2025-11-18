@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ShoppingCart, TrendingUp, Package } from 'lucide-react';
+import { ShoppingCart, TrendingUp, Package, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -17,9 +18,10 @@ import { formatMeasurement } from '@/utils/measurement';
 
 interface SalesReportProps {
   sales: Sale[];
+  onPrintClick: () => void;
 }
 
-export default function SalesReport({ sales }: SalesReportProps) {
+export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
   const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [saleTypeFilter, setSaleTypeFilter] = useState<'all' | 'retail' | 'wholesale'>('all');
@@ -85,7 +87,7 @@ export default function SalesReport({ sales }: SalesReportProps) {
   }, [filteredSales]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
@@ -154,6 +156,14 @@ export default function SalesReport({ sales }: SalesReportProps) {
         </Card>
       </div>
 
+      {/* Print Button */}
+      <div className="flex justify-end">
+        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          طباعة تقرير المبيعات
+        </Button>
+      </div>
+
       {/* Search and Filters */}
       <Card>
         <CardHeader>
@@ -170,7 +180,7 @@ export default function SalesReport({ sales }: SalesReportProps) {
 
             <div className="space-y-2">
               <Label>نوع البيع</Label>
-              <Select value={saleTypeFilter} onValueChange={(value: any) => setSaleTypeFilter(value)}>
+              <Select value={saleTypeFilter} onValueChange={(value) => setSaleTypeFilter(value as 'all' | 'retail' | 'wholesale')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -184,7 +194,7 @@ export default function SalesReport({ sales }: SalesReportProps) {
 
             <div className="space-y-2">
               <Label>طريقة الدفع</Label>
-              <Select value={paymentFilter} onValueChange={(value: any) => setPaymentFilter(value)}>
+              <Select value={paymentFilter} onValueChange={(value) => setPaymentFilter(value as 'all' | 'cash' | 'debt')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

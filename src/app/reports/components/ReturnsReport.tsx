@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Undo2, Package, TrendingDown } from 'lucide-react';
+import { Undo2, Package, TrendingDown, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Return } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -15,9 +16,10 @@ import { formatMeasurement } from '@/utils/measurement';
 
 interface ReturnsReportProps {
   returns: Return[];
+  onPrintClick: () => void;
 }
 
-export default function ReturnsReport({ returns }: ReturnsReportProps) {
+export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportProps) {
   const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -79,7 +81,7 @@ export default function ReturnsReport({ returns }: ReturnsReportProps) {
   }, [filteredReturns]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
@@ -146,6 +148,14 @@ export default function ReturnsReport({ returns }: ReturnsReportProps) {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Print Button */}
+      <div className="flex justify-end">
+        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          طباعة تقرير الإرجاعات
+        </Button>
       </div>
 
       {/* Search */}

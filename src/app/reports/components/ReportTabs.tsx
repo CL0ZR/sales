@@ -12,15 +12,16 @@ interface ReportTabsProps {
   sales: Sale[];
   products: Product[];
   returns: Return[];
+  onPrintClick: (type: 'sales' | 'inventory' | 'returns') => void;
 }
 
 /**
  * مكون تبويبات التقارير
  * يعرض التقارير الثلاثة (المبيعات، المخزون، الإرجاعات) في تبويبات منفصلة
  */
-export default function ReportTabs({ sales, products, returns }: ReportTabsProps) {
+export default function ReportTabs({ sales, products, returns, onPrintClick }: ReportTabsProps) {
   return (
-    <Tabs defaultValue="sales" className="w-full">
+    <Tabs defaultValue="sales" className="w-full" dir="rtl">
       <TabsList className="grid w-full grid-cols-3 h-auto">
         <TabsTrigger value="sales" className="flex items-center gap-2 py-3">
           <ShoppingCart className="h-4 w-4" />
@@ -51,15 +52,15 @@ export default function ReportTabs({ sales, products, returns }: ReportTabsProps
       </TabsList>
 
       <TabsContent value="sales" className="mt-6">
-        <SalesReport sales={sales} />
+        <SalesReport sales={sales} onPrintClick={() => onPrintClick('sales')} />
       </TabsContent>
 
       <TabsContent value="inventory" className="mt-6">
-        <InventoryReport products={products} />
+        <InventoryReport products={products} onPrintClick={() => onPrintClick('inventory')} />
       </TabsContent>
 
       <TabsContent value="returns" className="mt-6">
-        <ReturnsReport returns={returns} />
+        <ReturnsReport returns={returns} onPrintClick={() => onPrintClick('returns')} />
       </TabsContent>
     </Tabs>
   );
