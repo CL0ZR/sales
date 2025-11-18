@@ -160,7 +160,7 @@ function NavigationContent() {
                 إدارة المستخدمين
               </Button>
             </DialogTrigger>
-            <DialogContent size="6xl" className="max-h-[100vh] overflow-y-auto">
+            <DialogContent className="max-w-[95vw] sm:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle></DialogTitle>
               </DialogHeader>
