@@ -2058,7 +2058,7 @@ export default function Reports() {
 
       {/* Print Preview Dialog */}
       <Dialog open={showPrintPreview} onOpenChange={setShowPrintPreview}>
-        <DialogContent size="full" className="w-full h-[90vh] p-0 overflow-hidden !flex !flex-row !gap-0" data-print-active="true">
+        <DialogContent className="max-w-[95vw] sm:max-w-[92vw] lg:max-w-[90vw] w-full h-[90vh] p-0 overflow-hidden !flex !flex-row !gap-0" data-print-active="true">
           <DialogHeader className="sr-only">
             <DialogTitle>إعدادات الطباعة</DialogTitle>
           </DialogHeader>
