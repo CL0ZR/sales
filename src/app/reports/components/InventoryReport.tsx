@@ -228,6 +228,7 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
                   <TableHead className="text-right">الفئة</TableHead>
                   <TableHead className="text-right">القياس</TableHead>
@@ -239,7 +240,7 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((product) => {
+                {paginatedData.map((product, index) => {
                   const stockStatus = getStockStatus(product);
                   const stockValue = product.measurementType === 'quantity'
                     ? product.quantity * product.wholesalePrice
@@ -247,6 +248,9 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
 
                   return (
                     <TableRow key={product.id}>
+                      <TableCell className="text-right font-medium">
+                        {startIndex + index + 1}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div>
                           <p className="font-medium">{product.name}</p>

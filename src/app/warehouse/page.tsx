@@ -944,6 +944,7 @@ export default function Warehouse() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="text-right">#</TableHead>
                       <TableHead className="text-right">المنتج</TableHead>
                       <TableHead className="text-right">الفئة</TableHead>
                       <TableHead className="text-right">نوع القياس</TableHead>
@@ -958,10 +959,13 @@ export default function Warehouse() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product) => {
+                    {filteredProducts.map((product, index) => {
                       const stockStatus = getStockStatus(product);
                       return (
                         <TableRow key={product.id}>
+                          <TableCell className="text-right font-medium">
+                            {index + 1}
+                          </TableCell>
                           <TableCell className="text-right">
                             <div>
                               <p className="font-medium">{product.name}</p>

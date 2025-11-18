@@ -186,6 +186,7 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">التاريخ</TableHead>
                   <TableHead className="text-right">رقم البيع</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
@@ -196,9 +197,12 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((ret) => {
+                {paginatedData.map((ret, index) => {
                   return (
                     <TableRow key={ret.id}>
+                      <TableCell className="text-right font-medium">
+                        {startIndex + index + 1}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div>
                           <p className="font-medium">

@@ -220,6 +220,7 @@ export default function DebtBookPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right">#</TableHead>
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right">رقم الهاتف</TableHead>
                 <TableHead className="text-right">العنوان</TableHead>
@@ -227,8 +228,9 @@ export default function DebtBookPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {state.debtCustomers.map((customer) => (
+              {state.debtCustomers.map((customer, index) => (
                 <TableRow key={customer.id}>
+                  <TableCell className="text-right font-medium">{index + 1}</TableCell>
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>{customer.phone}</TableCell>
                   <TableCell>{customer.address || "-"}</TableCell>
@@ -273,6 +275,7 @@ export default function DebtBookPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right">#</TableHead>
                 <TableHead className="text-right">العميل</TableHead>
                 <TableHead className="text-right">المبلغ الإجمالي</TableHead>
                 <TableHead className="text-right">المدفوع</TableHead>
@@ -282,8 +285,9 @@ export default function DebtBookPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {state.debts.filter(d => d.status !== 'paid').map((debt) => (
+              {state.debts.filter(d => d.status !== 'paid').map((debt, index) => (
                 <TableRow key={debt.id}>
+                  <TableCell className="text-right font-medium">{index + 1}</TableCell>
                   <TableCell className="font-medium">
                     {debt.customer?.name || "غير معروف"}
                   </TableCell>

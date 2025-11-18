@@ -222,6 +222,7 @@ export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">التاريخ</TableHead>
                   <TableHead className="text-right">العميل</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
@@ -233,13 +234,16 @@ export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((sale) => {
+                {paginatedData.map((sale, index) => {
                   const costPrice = sale.product.wholesaleCostPrice || 0;
                   const profit = sale.finalPrice - (costPrice * (sale.product.measurementType === 'quantity' ? sale.quantity : (sale.weight || 0)));
                   const profitMargin = (profit / sale.finalPrice) * 100;
 
                   return (
                     <TableRow key={sale.id}>
+                      <TableCell className="text-right font-medium">
+                        {startIndex + index + 1}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div>
                           <p className="font-medium">

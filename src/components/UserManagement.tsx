@@ -334,6 +334,7 @@ export default function UserManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="text-right">#</TableHead>
                     <TableHead className="text-right">المستخدم</TableHead>
                     <TableHead className="text-right">النوع</TableHead>
                     <TableHead className="text-right">الاسم الكامل</TableHead>
@@ -342,8 +343,11 @@ export default function UserManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
+                  {users.map((user, index) => (
                     <TableRow key={user.id}>
+                      <TableCell className="text-right font-medium">
+                        {index + 1}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2">
                           {user.role === "admin" ? (

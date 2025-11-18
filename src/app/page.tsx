@@ -482,6 +482,7 @@ export default function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
                   <TableHead className="text-right">الوصف</TableHead>
                   <TableHead className="text-right">الفئة</TableHead>
@@ -494,10 +495,11 @@ export default function Dashboard() {
               </TableHeader>
               <TableBody>
                 {products.length > 0 ? (
-                  products.map((product) => {
+                  products.map((product, index) => {
                     const stockStatus = getStockStatus(product);
                     return (
                       <TableRow key={product.id}>
+                        <TableCell className="text-right font-medium">{index + 1}</TableCell>
                         <TableCell className="text-right font-medium">{product.name}</TableCell>
                         <TableCell className="text-right text-sm text-gray-600">
                           {product.description.length > 50
@@ -566,6 +568,7 @@ export default function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
                   <TableHead className="text-right">الوصف</TableHead>
                   <TableHead className="text-right">الفئة</TableHead>
@@ -579,7 +582,7 @@ export default function Dashboard() {
               </TableHeader>
               <TableBody>
                 {lowStockProducts.length > 0 ? (
-                  lowStockProducts.map((product) => {
+                  lowStockProducts.map((product, index) => {
                     const stockStatus = getStockStatus(product);
                     const minStock = product.measurementType === 'quantity'
                       ? `${product.minQuantity} قطعة`
@@ -587,6 +590,7 @@ export default function Dashboard() {
 
                     return (
                       <TableRow key={product.id}>
+                        <TableCell className="text-right font-medium">{index + 1}</TableCell>
                         <TableCell className="text-right font-medium">{product.name}</TableCell>
                         <TableCell className="text-right text-sm text-gray-600">
                           {product.description.length > 40
@@ -658,6 +662,7 @@ export default function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
                   <TableHead className="text-right">نوع البيع</TableHead>
                   <TableHead className="text-right">الكمية/الوزن</TableHead>
@@ -672,7 +677,7 @@ export default function Dashboard() {
               </TableHeader>
               <TableBody>
                 {sales.length > 0 ? (
-                  sales.map((sale) => {
+                  sales.map((sale, index) => {
                     const paymentMethodText = {
                       cash: 'نقداً',
                       card: 'بطاقة',
@@ -686,6 +691,7 @@ export default function Dashboard() {
 
                     return (
                       <TableRow key={sale.id}>
+                        <TableCell className="text-right font-medium">{index + 1}</TableCell>
                         <TableCell className="text-right font-medium">{sale.product.name}</TableCell>
                         <TableCell className="text-right">
                           <Badge className={
@@ -749,6 +755,7 @@ export default function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
                   <TableHead className="text-right">نوع البيع</TableHead>
                   <TableHead className="text-right">الكمية/الوزن</TableHead>
@@ -763,7 +770,7 @@ export default function Dashboard() {
               </TableHeader>
               <TableBody>
                 {todaySales.length > 0 ? (
-                  todaySales.map((sale) => {
+                  todaySales.map((sale, index) => {
                     const paymentMethodText = {
                       cash: 'نقداً',
                       card: 'بطاقة',
@@ -777,6 +784,7 @@ export default function Dashboard() {
 
                     return (
                       <TableRow key={sale.id}>
+                        <TableCell className="text-right font-medium">{index + 1}</TableCell>
                         <TableCell className="text-right font-medium">{sale.product.name}</TableCell>
                         <TableCell className="text-right">
                           <Badge className={
