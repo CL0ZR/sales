@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
+import { Sale, Product, Return } from '@/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import ReportFilters from './components/shared/ReportFilters';
@@ -31,6 +32,9 @@ export default function Reports() {
   // Print preview state
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [previewType, setPreviewType] = useState<'sales' | 'inventory' | 'returns'>('sales');
+  const [printSales, setPrintSales] = useState<Sale[]>([]);
+  const [printProducts, setPrintProducts] = useState<Product[]>([]);
+  const [printReturns, setPrintReturns] = useState<Return[]>([]);
 
   // Print settings state
   const [printSettings, setPrintSettings] = useState({
@@ -89,8 +93,18 @@ export default function Reports() {
   });
 
   // Print handlers
-  const handlePrintPreview = (type: 'sales' | 'inventory' | 'returns') => {
+  const handlePrintPreview = (type: 'sales' | 'inventory' | 'returns', filteredData: Sale[] | Product[] | Return[]) => {
     setPreviewType(type);
+
+    // Store the filtered data based on type
+    if (type === 'sales') {
+      setPrintSales(filteredData as Sale[]);
+    } else if (type === 'inventory') {
+      setPrintProducts(filteredData as Product[]);
+    } else if (type === 'returns') {
+      setPrintReturns(filteredData as Return[]);
+    }
+
     setShowPrintPreview(true);
   };
 
@@ -182,9 +196,9 @@ export default function Reports() {
         open={showPrintPreview}
         onClose={() => setShowPrintPreview(false)}
         previewType={previewType}
-        sales={filteredSales}
-        products={products}
-        returns={filteredReturns}
+        sales={printSales}
+        products={printProducts}
+        returns={printReturns}
         dateRange={dateRange}
         printSettings={printSettings}
         onPrintSettingsChange={setPrintSettings}

@@ -18,7 +18,7 @@ import { formatMeasurement } from '@/utils/measurement';
 
 interface SalesReportProps {
   sales: Sale[];
-  onPrintClick: () => void;
+  onPrintClick: (filteredSales: Sale[]) => void;
 }
 
 export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
@@ -203,7 +203,7 @@ export default function SalesReport({ sales, onPrintClick }: SalesReportProps) {
 
       {/* Print Button */}
       <div className="flex justify-end">
-        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+        <Button onClick={() => onPrintClick(filteredSales)} variant="outline" className="flex items-center gap-2">
           <Printer className="h-4 w-4" />
           طباعة تقرير المبيعات
         </Button>

@@ -641,11 +641,11 @@ export default function ProductsAndSales() {
                       disabled={isOutOfStock(product)}
                       variant="outline"
                       size="sm"
-                      className="w-full h-8 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:border-gray-300 disabled:text-gray-400 px-1.5 text-xs"
+                      className="text-[12px] font-medium w-full h-8 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:border-gray-300 disabled:text-gray-400 px-2"
                       title="إضافة للسلة"
                     >
-                      <Plus className="h-3 w-3 ml-0.5" />
-                      <span className="text-[10px] font-medium">سلة</span>
+                      سلة
+                      <Plus className="h-3 w-3" />
                     </Button>
                     <Button
                       onClick={(e) => {

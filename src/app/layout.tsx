@@ -5,6 +5,7 @@ import { AppProvider } from "@/context/AppContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { AlertProvider } from "@/context/AlertContext";
 import Layout from "@/components/Layout";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -48,16 +49,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <CurrencyProvider>
-            <AppProvider>
-              <CartProvider>
-                <Layout>
-                  {children}
-                </Layout>
-                <Toaster />
-              </CartProvider>
-            </AppProvider>
-          </CurrencyProvider>
+          <AlertProvider>
+            <CurrencyProvider>
+              <AppProvider>
+                <CartProvider>
+                  <Layout>
+                    {children}
+                  </Layout>
+                  <Toaster />
+                </CartProvider>
+              </AppProvider>
+            </CurrencyProvider>
+          </AlertProvider>
         </AuthProvider>
       </body>
     </html>

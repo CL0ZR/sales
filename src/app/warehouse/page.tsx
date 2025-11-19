@@ -16,6 +16,7 @@ import {
 import { useApp } from "@/context/AppContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
+import { useAlert } from "@/context/AlertContext";
 import {
   Product,
   Category,
@@ -77,6 +78,7 @@ export default function Warehouse() {
   const { products, categories } = state;
   const { formatCurrency, currentCurrency } = useCurrency();
   const { user } = useAuth();
+  const { showAlert, showConfirm } = useAlert();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -160,13 +162,17 @@ export default function Warehouse() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Prevent submission if cost price exceeds selling price
     if (hasPriceError) {
-      alert(
-        "لا يمكن حفظ المنتج! سعر الشراء أعلى من سعر البيع، مما سيؤدي إلى خسارة. الرجاء تصحيح الأسعار."
+      await showAlert(
+        "لا يمكن حفظ المنتج! سعر الشراء أعلى من سعر البيع، مما سيؤدي إلى خسارة. الرجاء تصحيح الأسعار.",
+        {
+          variant: 'destructive',
+          title: 'خطأ في الأسعار',
+        }
       );
       return;
     }
@@ -231,11 +237,23 @@ export default function Warehouse() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+    const confirmed = await showConfirm("هل أنت متأكد من حذف هذا المنتج؟", {
+      variant: 'destructive',
+      confirmText: 'نعم، احذف',
+      cancelText: 'إلغاء',
+    });
+
+    if (confirmed) {
       try {
         await deleteProduct(id);
       } catch (error) {
-        alert(error instanceof Error ? error.message : "فشل حذف المنتج");
+        await showAlert(
+          error instanceof Error ? error.message : "فشل حذف المنتج",
+          {
+            variant: 'destructive',
+            title: 'خطأ',
+          }
+        );
       }
     }
   };
@@ -295,12 +313,17 @@ export default function Warehouse() {
     setIsCategoryModalOpen(true);
   };
 
-  const handleDeleteCategory = (id: string) => {
-    if (
-      confirm(
-        "هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع الفئات الفرعية أيضاً."
-      )
-    ) {
+  const handleDeleteCategory = async (id: string) => {
+    const confirmed = await showConfirm(
+      "هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع الفئات الفرعية أيضاً.",
+      {
+        variant: 'destructive',
+        confirmText: 'نعم، احذف',
+        cancelText: 'إلغاء',
+      }
+    );
+
+    if (confirmed) {
       deleteCategory(id);
     }
   };

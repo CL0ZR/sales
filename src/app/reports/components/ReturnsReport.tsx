@@ -16,7 +16,7 @@ import { formatMeasurement } from '@/utils/measurement';
 
 interface ReturnsReportProps {
   returns: Return[];
-  onPrintClick: () => void;
+  onPrintClick: (filteredReturns: Return[]) => void;
 }
 
 export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportProps) {
@@ -167,7 +167,7 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
 
       {/* Print Button */}
       <div className="flex justify-end">
-        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+        <Button onClick={() => onPrintClick(filteredReturns)} variant="outline" className="flex items-center gap-2">
           <Printer className="h-4 w-4" />
           طباعة تقرير الإرجاعات
         </Button>

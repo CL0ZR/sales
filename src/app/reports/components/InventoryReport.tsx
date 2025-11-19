@@ -18,7 +18,7 @@ import { formatMeasurement, isLowStock, isOutOfStock, getStockStatus } from '@/u
 
 interface InventoryReportProps {
   products: Product[];
-  onPrintClick: () => void;
+  onPrintClick: (filteredProducts: Product[]) => void;
 }
 
 export default function InventoryReport({ products, onPrintClick }: InventoryReportProps) {
@@ -209,7 +209,7 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
 
       {/* Print Button */}
       <div className="flex justify-end">
-        <Button onClick={onPrintClick} variant="outline" className="flex items-center gap-2">
+        <Button onClick={() => onPrintClick(filteredProducts)} variant="outline" className="flex items-center gap-2">
           <Printer className="h-4 w-4" />
           طباعة تقرير المخزون
         </Button>

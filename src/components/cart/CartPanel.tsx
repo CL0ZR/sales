@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useAlert } from '@/context/AlertContext';
 import { CartItem } from '@/types';
 
 export function CartPanel() {
@@ -24,6 +25,7 @@ export function CartPanel() {
     getItemTotal,
   } = useCart();
   const { formatCurrency, currentCurrency: currency } = useCurrency();
+  const { showConfirm } = useAlert();
 
   if (!isOpen) {
     return null;
@@ -34,8 +36,16 @@ export function CartPanel() {
     openCheckout();
   };
 
-  const handleClearCart = () => {
-    if (confirm('هل أنت متأكد من حذف جميع المنتجات من السلة؟')) {
+  const handleClearCart = async () => {
+    const confirmed = await showConfirm(
+      'هل أنت متأكد من حذف جميع المنتجات من السلة؟',
+      {
+        variant: 'warning',
+        confirmText: 'نعم، احذف الكل',
+        cancelText: 'إلغاء',
+      }
+    );
+    if (confirmed) {
       clearCart();
       closeCart();
     }
@@ -115,15 +125,19 @@ export function CartPanel() {
 function CartItemCard({ item }: { item: CartItem }) {
   const { removeItem, updateItemQuantity, updateItemDiscount, getItemTotal } = useCart();
   const { formatCurrency, currentCurrency: currency } = useCurrency();
+  const { showAlert } = useAlert();
   const [discount, setDiscount] = useState(item.discount);
 
-  const handleQuantityChange = (delta: number) => {
+  const handleQuantityChange = async (delta: number) => {
     const newQuantity = Math.max(1, item.quantity + delta);
 
     // Check stock
     if (item.product.measurementType === 'quantity') {
       if (newQuantity > item.product.quantity) {
-        alert('المخزون غير كافي');
+        await showAlert('المخزون غير كافي', {
+          variant: 'warning',
+          title: 'تحذير',
+        });
         return;
       }
     }
@@ -131,13 +145,16 @@ function CartItemCard({ item }: { item: CartItem }) {
     updateItemQuantity(item.id, newQuantity, item.weight);
   };
 
-  const handleWeightChange = (value: string) => {
+  const handleWeightChange = async (value: string) => {
     const newWeight = parseFloat(value) || 0;
 
     // Check stock
     if (item.product.measurementType === 'weight') {
       if (newWeight > (item.product.weight || 0)) {
-        alert('المخزون غير كافي');
+        await showAlert('المخزون غير كافي', {
+          variant: 'warning',
+          title: 'تحذير',
+        });
         return;
       }
     }

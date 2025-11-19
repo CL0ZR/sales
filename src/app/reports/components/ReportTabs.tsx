@@ -12,7 +12,7 @@ interface ReportTabsProps {
   sales: Sale[];
   products: Product[];
   returns: Return[];
-  onPrintClick: (type: 'sales' | 'inventory' | 'returns') => void;
+  onPrintClick: (type: 'sales' | 'inventory' | 'returns', filteredData: Sale[] | Product[] | Return[]) => void;
 }
 
 /**
@@ -52,15 +52,15 @@ export default function ReportTabs({ sales, products, returns, onPrintClick }: R
       </TabsList>
 
       <TabsContent value="sales" className="mt-6">
-        <SalesReport sales={sales} onPrintClick={() => onPrintClick('sales')} />
+        <SalesReport sales={sales} onPrintClick={(filteredSales) => onPrintClick('sales', filteredSales)} />
       </TabsContent>
 
       <TabsContent value="inventory" className="mt-6">
-        <InventoryReport products={products} onPrintClick={() => onPrintClick('inventory')} />
+        <InventoryReport products={products} onPrintClick={(filteredProducts) => onPrintClick('inventory', filteredProducts)} />
       </TabsContent>
 
       <TabsContent value="returns" className="mt-6">
-        <ReturnsReport returns={returns} onPrintClick={() => onPrintClick('returns')} />
+        <ReturnsReport returns={returns} onPrintClick={(filteredReturns) => onPrintClick('returns', filteredReturns)} />
       </TabsContent>
     </Tabs>
   );
