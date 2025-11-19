@@ -137,8 +137,8 @@ export default function PrintPreviewDialog({
     if (previewType !== 'inventory') return true;
 
     const isOutOfStock = product.quantity === 0;
-    const isLowStock = product.quantity > 0 && product.quantity <= (product.minStock || 10);
-    const isAvailable = product.quantity > (product.minStock || 10);
+    const isLowStock = product.quantity > 0 && product.quantity <= (product.minQuantity || 10);
+    const isAvailable = product.quantity > (product.minQuantity || 10);
 
     return (
       (printSettings.inventoryFilters.showOutOfStock && isOutOfStock) ||
@@ -544,7 +544,7 @@ export default function PrintPreviewDialog({
                       {filteredProducts.map((product) => {
                         const isOutOfStock = product.quantity === 0;
                         const isLowStock =
-                          product.quantity > 0 && product.quantity <= (product.minStock || 10);
+                          product.quantity > 0 && product.quantity <= (product.minQuantity || 10);
 
                         return (
                           <tr
@@ -578,7 +578,7 @@ export default function PrintPreviewDialog({
                             )}
                             {printSettings.inventoryColumns.retailValue && (
                               <td className="border p-2">
-                                {formatCurrency(product.retailPrice * product.quantity, product.currency)}
+                                {formatCurrency(product.salePrice * product.quantity, product.currency)}
                               </td>
                             )}
                             {printSettings.inventoryColumns.barcode && (

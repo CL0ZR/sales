@@ -19,24 +19,29 @@ export function getAllSales(): Sale[] {
   }) as Sale[];
 }
 
+// Counter for generating unique IDs when multiple sales happen in same millisecond
+let saleIdCounter = 0;
+
 // إضافة مبيعة جديدة
 export function addSale(sale: Omit<Sale, 'id' | 'saleDate'>): Sale {
   const db = getDatabase();
-  const id = Date.now().toString();
+  // Generate unique ID with timestamp + counter to avoid collisions
+  const id = `${Date.now()}-${saleIdCounter++}`;
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
     INSERT INTO sales (
       id, productId, saleType, quantity, weight, weightUnit,
       unitPrice, totalPrice, discount, finalPrice,
-      customerName, paymentMethod, debtCustomerId, debtId, saleDate
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      customerName, paymentMethod, debtCustomerId, debtId, transactionId, saleDate
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   stmt.run(
     id, sale.productId, sale.saleType, sale.quantity, sale.weight, sale.weightUnit,
     sale.unitPrice, sale.totalPrice, sale.discount, sale.finalPrice,
-    sale.customerName, sale.paymentMethod, sale.debtCustomerId || null, sale.debtId || null, now
+    sale.customerName, sale.paymentMethod, sale.debtCustomerId || null, sale.debtId || null,
+    sale.transactionId || null, now
   );
 
   return {

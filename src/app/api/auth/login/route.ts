@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // البحث عن المستخدم
     const user = db
       .prepare('SELECT * FROM users WHERE username = ?')
-      .get(username) as any;
+      .get(username) as { id: string; username: string; password: string; fullName?: string; role: string } | undefined;
 
     if (!user) {
       return NextResponse.json(
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // إرجاع بيانات المستخدم (بدون كلمة المرور)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json({

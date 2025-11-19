@@ -112,6 +112,23 @@ export interface Sale {
   // Debt tracking
   debtCustomerId?: string;
   debtId?: string;
+  transactionId?: string; // Links multiple sales from same cart checkout
+}
+
+// Shopping Cart Types
+export interface CartItem {
+  id: string; // Unique cart item ID
+  product: Product;
+  quantity: number;
+  weight?: number;
+  unitPrice: number;
+  discount: number;
+  saleType: SaleType; // retail or wholesale
+}
+
+export interface Cart {
+  items: CartItem[];
+  createdAt: number;
 }
 
 export interface Return {

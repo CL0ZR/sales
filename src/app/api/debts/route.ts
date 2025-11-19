@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getAllDebts,
   getDebtsByCustomer,
+  getDebtById,
   createDebt,
   updateDebt,
   deleteDebt,
@@ -12,12 +13,21 @@ import { Debt } from '@/types';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
     const customerId = searchParams.get('customerId');
     const stats = searchParams.get('stats');
 
     if (stats === 'true') {
       const statistics = getDebtStatistics();
       return NextResponse.json(statistics);
+    }
+
+    if (id) {
+      const debt = getDebtById(id);
+      if (!debt) {
+        return NextResponse.json({ error: 'Debt not found' }, { status: 404 });
+      }
+      return NextResponse.json(debt);
     }
 
     if (customerId) {

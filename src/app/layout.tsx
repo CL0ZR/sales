@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
 import Layout from "@/components/Layout";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -49,10 +50,12 @@ export default function RootLayout({
         <AuthProvider>
           <CurrencyProvider>
             <AppProvider>
-              <Layout>
-                {children}
-              </Layout>
-              <Toaster />
+              <CartProvider>
+                <Layout>
+                  {children}
+                </Layout>
+                <Toaster />
+              </CartProvider>
             </AppProvider>
           </CurrencyProvider>
         </AuthProvider>

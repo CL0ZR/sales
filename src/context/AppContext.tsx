@@ -612,11 +612,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SET_PRODUCTS', payload: products });
       }
 
-      // Fetch categories from API
-      const categoriesRes = await fetch('/api/categories');
-      if (categoriesRes.ok) {
-        const categories = await categoriesRes.json();
-        dispatch({ type: 'SET_CATEGORIES', payload: categories });
+      // Fetch categories from API (endpoint may not exist, skip if 404)
+      try {
+        const categoriesRes = await fetch('/api/categories');
+        if (categoriesRes.ok) {
+          const categories = await categoriesRes.json();
+          dispatch({ type: 'SET_CATEGORIES', payload: categories });
+        }
+      } catch (error) {
+        // Categories endpoint doesn't exist, categories will be loaded from database
+        console.log('Categories API not available, using database categories');
       }
 
       // Fetch sales from API

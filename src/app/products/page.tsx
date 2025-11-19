@@ -10,9 +10,11 @@ import {
   Tag,
   DollarSign,
   Undo2,
+  Plus,
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { useCurrency } from "@/context/CurrencyContext";
+import { useCart } from "@/context/CartContext";
 import { Product, Sale, CURRENCIES, WEIGHT_UNITS } from "@/types";
 import {
   formatMeasurement,
@@ -48,12 +50,16 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FloatingCartButton } from "@/components/cart/FloatingCartButton";
+import { CartPanel } from "@/components/cart/CartPanel";
+import { CartCheckoutDialog } from "@/components/cart/CartCheckoutDialog";
 import { toast } from "sonner";
 
 export default function ProductsAndSales() {
   const { state, addSale, processReturn } = useApp();
   const { products, categories, sales, returns } = state;
   const { formatCurrency } = useCurrency();
+  const { addItem: addToCart, items: cartItems } = useCart();
 
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -206,6 +212,29 @@ export default function ProductsAndSales() {
       debtCustomerId: "",
     });
     setIsSaleModalOpen(true);
+  };
+
+  const handleAddToCart = (product: Product) => {
+    try {
+      const defaultQuantity = product.measurementType === 'quantity' ? 1 : 0;
+      const defaultWeight = product.measurementType === 'weight' ? 1 : undefined;
+
+      // Check if product already exists in cart
+      const existingItem = cartItems.find(
+        item => item.product.id === product.id && item.saleType === 'retail'
+      );
+
+      addToCart(product, 'retail', defaultQuantity, defaultWeight, 0);
+
+      if (existingItem) {
+        toast.success(`تم زيادة الكمية لـ ${product.name}`);
+      } else {
+        toast.success(`تمت إضافة ${product.name} إلى السلة`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'فشل إضافة المنتج إلى السلة';
+      toast.error(errorMessage);
+    }
   };
 
   const handleProductDetails = (product: Product) => {
@@ -603,24 +632,39 @@ export default function ProductsAndSales() {
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-auto pt-3">
+                  <div className="grid grid-cols-3 gap-1.5 mt-auto pt-3">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
+                      disabled={isOutOfStock(product)}
+                      variant="outline"
+                      size="sm"
+                      className="w-full h-8 border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:border-gray-300 disabled:text-gray-400 px-1.5 text-xs"
+                      title="إضافة للسلة"
+                    >
+                      <Plus className="h-3 w-3 ml-0.5" />
+                      <span className="text-[10px] font-medium">سلة</span>
+                    </Button>
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleProductSale(product);
                       }}
                       disabled={isOutOfStock(product)}
-                      className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/25 disabled:from-gray-400 disabled:to-gray-400 disabled:shadow-none"
+                      size="sm"
+                      className="w-full h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white text-xs shadow-lg shadow-emerald-500/25 disabled:from-gray-400 disabled:to-gray-400 disabled:shadow-none px-2"
                     >
                       {isOutOfStock(product) ? (
                         <>
-                          <Package className="h-4 w-4 mr-2" />
-                          نفد
+                          <Package className="h-3 w-3 mr-1" />
+                          <span className="text-xs">نفد</span>
                         </>
                       ) : (
                         <>
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          بيع الآن
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          <span className="text-xs">بيع</span>
                         </>
                       )}
                     </Button>
@@ -630,10 +674,11 @@ export default function ProductsAndSales() {
                         handleProductReturn(product);
                       }}
                       variant="outline"
-                      className="w-full border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                      size="sm"
+                      className="w-full h-8 border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-xs px-2"
                     >
-                      <Undo2 className="h-4 w-4 mr-2" />
-                      إرجاع
+                      <Undo2 className="h-3 w-3 mr-1" />
+                      <span className="text-xs">إرجاع</span>
                     </Button>
                   </div>
                 </div>
@@ -1381,6 +1426,11 @@ export default function ProductsAndSales() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Shopping Cart Components */}
+      <FloatingCartButton />
+      <CartPanel />
+      <CartCheckoutDialog />
     </div>
   );
 }

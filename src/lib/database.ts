@@ -403,6 +403,76 @@ function migrateDebtSalesCustomerNames(database: Database.Database) {
   }
 }
 
+// Migration: Make phone number optional in debt_customers table
+function migratePhoneOptional(database: Database.Database) {
+  try {
+    // Check if phone column is NOT NULL
+    const tableInfo = database.prepare("PRAGMA table_info(debt_customers)").all() as Array<{ name: string; notnull: number }>;
+    const phoneColumn = tableInfo.find(col => col.name === 'phone');
+
+    if (phoneColumn && phoneColumn.notnull === 1) {
+      console.log('🔄 Migrating debt_customers phone column to be optional...');
+
+      // SQLite doesn't allow modifying column constraints, so we need to recreate the table
+      database.exec(`
+        -- Create new table with phone as optional
+        CREATE TABLE debt_customers_new (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          phone TEXT,
+          address TEXT,
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Copy existing data
+        INSERT INTO debt_customers_new (id, name, phone, address, createdAt, updatedAt)
+        SELECT id, name, phone, address, createdAt, updatedAt
+        FROM debt_customers;
+
+        -- Drop old table
+        DROP TABLE debt_customers;
+
+        -- Rename new table to debt_customers
+        ALTER TABLE debt_customers_new RENAME TO debt_customers;
+
+        -- Recreate indexes
+        CREATE INDEX IF NOT EXISTS idx_debt_customers_name ON debt_customers(name);
+        CREATE INDEX IF NOT EXISTS idx_debt_customers_phone ON debt_customers(phone);
+      `);
+
+      console.log('✅ Phone column migration completed - phone is now optional');
+    }
+  } catch (error) {
+    console.error('⚠️ Phone optional migration warning:', error);
+    // Don't throw - migration is optional for new databases
+  }
+}
+
+// Migration: Add transactionId to sales table for shopping cart support
+function migrateTransactionSupport(database: Database.Database) {
+  try {
+    // Check if transactionId column exists
+    const tableInfo = database.prepare("PRAGMA table_info(sales)").all() as Array<{ name: string }>;
+    const hasTransactionId = tableInfo.some(col => col.name === 'transactionId');
+
+    if (!hasTransactionId) {
+      console.log('🔄 Adding transactionId support to sales table...');
+
+      // Add transactionId column to sales table
+      database.exec(`
+        ALTER TABLE sales ADD COLUMN transactionId TEXT;
+        CREATE INDEX IF NOT EXISTS idx_sales_transaction ON sales(transactionId);
+      `);
+
+      console.log('✅ Transaction ID support added to sales table');
+    }
+  } catch (error) {
+    console.error('⚠️ Transaction support migration warning:', error);
+    // Don't throw - migration is optional for new databases
+  }
+}
+
 // الحصول على اتصال قاعدة البيانات
 export function getDatabase(): Database.Database {
   if (!db) {
@@ -421,6 +491,8 @@ export function getDatabase(): Database.Database {
       migrateDebtTracking(db);
       migratePaymentMethods(db);
       migrateDebtSalesCustomerNames(db);
+      migratePhoneOptional(db);
+      migrateTransactionSupport(db);
 
       console.log('✅ Database initialized successfully');
     } catch (error) {
