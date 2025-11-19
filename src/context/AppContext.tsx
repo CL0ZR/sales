@@ -479,21 +479,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         return sum;
       }, 0) - state.returns
-      .filter(returnItem => {
-        const sale = state.sales.find(s => s.id === returnItem.saleId);
-        return sale && (!sale.saleType || sale.saleType === 'retail');
-      })
-      .reduce((sum, returnItem) => {
-        const product = state.products.find(p => p.id === returnItem.productId);
-        if (product) {
-          const returnAmount = product.measurementType === 'quantity'
-            ? returnItem.returnedQuantity
-            : returnItem.returnedWeight || 0;
-          const lostProfit = (returnItem.unitPrice - product.wholesalePrice) * returnAmount;
-          return sum + lostProfit;
-        }
-        return sum;
-      }, 0);
+        .filter(returnItem => {
+          const sale = state.sales.find(s => s.id === returnItem.saleId);
+          return sale && (!sale.saleType || sale.saleType === 'retail');
+        })
+        .reduce((sum, returnItem) => {
+          const product = state.products.find(p => p.id === returnItem.productId);
+          if (product) {
+            const returnAmount = product.measurementType === 'quantity'
+              ? returnItem.returnedQuantity
+              : returnItem.returnedWeight || 0;
+            const lostProfit = (returnItem.unitPrice - product.wholesalePrice) * returnAmount;
+            return sum + lostProfit;
+          }
+          return sum;
+        }, 0);
 
     // Wholesale profit
     const wholesaleProfit = state.sales
@@ -511,23 +511,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         return sum;
       }, 0) - state.returns
-      .filter(returnItem => {
-        const sale = state.sales.find(s => s.id === returnItem.saleId);
-        return sale && sale.saleType === 'wholesale';
-      })
-      .reduce((sum, returnItem) => {
-        const product = state.products.find(p => p.id === returnItem.productId);
-        if (product) {
-          const returnAmount = product.measurementType === 'quantity'
-            ? returnItem.returnedQuantity
-            : returnItem.returnedWeight || 0;
-          // Use wholesaleCostPrice as cost for wholesale sales
-          const costPrice = product.wholesaleCostPrice || product.wholesalePrice;
-          const lostProfit = (returnItem.unitPrice - costPrice) * returnAmount;
-          return sum + lostProfit;
-        }
-        return sum;
-      }, 0);
+        .filter(returnItem => {
+          const sale = state.sales.find(s => s.id === returnItem.saleId);
+          return sale && sale.saleType === 'wholesale';
+        })
+        .reduce((sum, returnItem) => {
+          const product = state.products.find(p => p.id === returnItem.productId);
+          if (product) {
+            const returnAmount = product.measurementType === 'quantity'
+              ? returnItem.returnedQuantity
+              : returnItem.returnedWeight || 0;
+            // Use wholesaleCostPrice as cost for wholesale sales
+            const costPrice = product.wholesaleCostPrice || product.wholesalePrice;
+            const lostProfit = (returnItem.unitPrice - costPrice) * returnAmount;
+            return sum + lostProfit;
+          }
+          return sum;
+        }, 0);
 
     // Today's retail vs wholesale
     const todayRetailSales = state.sales.filter(sale =>
@@ -540,20 +540,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const todayRetailRevenue = state.sales
       .filter(sale => new Date(sale.saleDate) >= today && (!sale.saleType || sale.saleType === 'retail'))
       .reduce((sum, sale) => sum + sale.finalPrice, 0) - state.returns
-      .filter(returnItem => {
-        const sale = state.sales.find(s => s.id === returnItem.saleId);
-        return sale && new Date(returnItem.returnDate) >= today && (!sale.saleType || sale.saleType === 'retail');
-      })
-      .reduce((sum, returnItem) => sum + returnItem.totalRefund, 0);
+        .filter(returnItem => {
+          const sale = state.sales.find(s => s.id === returnItem.saleId);
+          return sale && new Date(returnItem.returnDate) >= today && (!sale.saleType || sale.saleType === 'retail');
+        })
+        .reduce((sum, returnItem) => sum + returnItem.totalRefund, 0);
 
     const todayWholesaleRevenue = state.sales
       .filter(sale => new Date(sale.saleDate) >= today && sale.saleType === 'wholesale')
       .reduce((sum, sale) => sum + sale.finalPrice, 0) - state.returns
-      .filter(returnItem => {
-        const sale = state.sales.find(s => s.id === returnItem.saleId);
-        return sale && new Date(returnItem.returnDate) >= today && sale.saleType === 'wholesale';
-      })
-      .reduce((sum, returnItem) => sum + returnItem.totalRefund, 0);
+        .filter(returnItem => {
+          const sale = state.sales.find(s => s.id === returnItem.saleId);
+          return sale && new Date(returnItem.returnDate) >= today && sale.saleType === 'wholesale';
+        })
+        .reduce((sum, returnItem) => sum + returnItem.totalRefund, 0);
 
     // Calculate top selling products
     const productSales = state.sales.reduce((acc, sale) => {

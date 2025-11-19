@@ -200,120 +200,120 @@ export default function UserManagement() {
                 إضافة مستخدم جديد
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>
-                {editingUser ? "تعديل المستخدم" : "إضافة مستخدم جديد"}
-              </DialogTitle>
-            </DialogHeader>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingUser ? "تعديل المستخدم" : "إضافة مستخدم جديد"}
+                </DialogTitle>
+              </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">اسم المستخدم *</Label>
-                <Input
-                  id="username"
-                  required
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  disabled={
-                    editingUser?.username === "admin" ||
-                    editingUser?.username === "usar"
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">
-                  {editingUser
-                    ? "كلمة المرور الجديدة (اتركها فارغة للاحتفاظ بالحالية)"
-                    : "كلمة المرور *"}
-                </Label>
-                <div className="relative">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">اسم المستخدم *</Label>
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required={!editingUser}
-                    value={formData.password}
+                    id="username"
+                    required
+                    value={formData.username}
                     onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
+                      setFormData({ ...formData, username: e.target.value })
                     }
-                    className="pl-10"
+                    disabled={
+                      editingUser?.username === "admin" ||
+                      editingUser?.username === "usar"
+                    }
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label>نوع المستخدم *</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, role: value as UserRole })
-                  }
-                  disabled={editingUser?.username === "admin"}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-red-500" />
-                        مدير النظام
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="assistant-admin">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-amber-500" />
-                        مساعد مدير
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="user">
-                      <div className="flex items-center gap-2">
-                        <UserIcon className="h-4 w-4 text-blue-500" />
-                        مستخدم عادي
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">
+                    {editingUser
+                      ? "كلمة المرور الجديدة (اتركها فارغة للاحتفاظ بالحالية)"
+                      : "كلمة المرور *"}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      required={!editingUser}
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      className="pl-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="fullName">الاسم الكامل</Label>
-                <Input
-                  id="fullName"
-                  value={formData.fullName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
-                  }
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label>نوع المستخدم *</Label>
+                  <Select
+                    value={formData.role}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, role: value as UserRole })
+                    }
+                    disabled={editingUser?.username === "admin"}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-red-500" />
+                          مدير النظام
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="assistant-admin">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-amber-500" />
+                          مساعد مدير
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="user">
+                        <div className="flex items-center gap-2">
+                          <UserIcon className="h-4 w-4 text-blue-500" />
+                          مستخدم عادي
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="flex items-center justify-start gap-4 pt-6">
-                <Button type="submit">
-                  {editingUser ? "حفظ التعديلات" : "إنشاء المستخدم"}
-                </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  إلغاء
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">الاسم الكامل</Label>
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-start gap-4 pt-6">
+                  <Button type="submit">
+                    {editingUser ? "حفظ التعديلات" : "إنشاء المستخدم"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    إلغاء
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </div>
 
       {/* Users Table */}
       <Card>
@@ -369,15 +369,15 @@ export default function UserManagement() {
                             user.role === "admin"
                               ? "bg-red-100 text-red-700"
                               : user.role === "assistant-admin"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-blue-100 text-blue-700"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-blue-100 text-blue-700"
                           }
                         >
                           {user.role === "admin"
                             ? "مدير النظام"
                             : user.role === "assistant-admin"
-                            ? "مساعد مدير"
-                            : "مستخدم عادي"}
+                              ? "مساعد مدير"
+                              : "مستخدم عادي"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

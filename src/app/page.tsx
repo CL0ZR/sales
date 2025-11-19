@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { 
-  Package, 
-  AlertTriangle, 
-  ShoppingCart, 
-  DollarSign, 
+import {
+  Package,
+  AlertTriangle,
+  ShoppingCart,
+  DollarSign,
   TrendingUp,
   Calendar,
   Plus,
@@ -122,7 +122,7 @@ export default function Dashboard() {
             <p className="text-xs text-green-600 mt-1">عدد مبيعات الجملة</p>
           </CardContent>
         </Card>
-        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
@@ -225,7 +225,7 @@ export default function Dashboard() {
           icon={DollarSign}
           color="primary"
         />
-        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
@@ -258,7 +258,7 @@ export default function Dashboard() {
             <p className="text-xs text-green-600 mt-1">إيرادات الجملة اليوم</p>
           </CardContent>
         </Card>
-        
+
       </div>
 
       {/* Wholesale vs Retail Breakdown */}
@@ -385,21 +385,22 @@ export default function Dashboard() {
                       : `${product.minWeight} ${product.weightUnit === 'kg' ? 'كجم' : 'جم'}`;
 
                     return (
-                    <Alert key={product.id} className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
-                      <AlertTriangle className="h-4 w-4 text-amber-600" />
-                      <AlertDescription>
-                        <div className="flex items-center justify-between" style={{ width: "100%" }}>
-                          <div>
-                            <p className="font-medium text-gray-800">{product.name}</p>
-                            <p className="text-sm text-gray-600">الحد الأدنى: {minStock}</p>
+                      <Alert key={product.id} className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                        <AlertDescription>
+                          <div className="flex items-center justify-between" style={{ width: "100%" }}>
+                            <div>
+                              <p className="font-medium text-gray-800">{product.name}</p>
+                              <p className="text-sm text-gray-600">الحد الأدنى: {minStock}</p>
+                            </div>
+                            <Badge className="bg-red-500 text-white hover:bg-red-600">
+                              {currentStock} متبقي
+                            </Badge>
                           </div>
-                          <Badge className="bg-red-500 text-white hover:bg-red-600">
-                            {currentStock} متبقي
-                          </Badge>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  );})}
+                        </AlertDescription>
+                      </Alert>
+                    );
+                  })}
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
@@ -433,7 +434,7 @@ export default function Dashboard() {
                 </div>
               </Link>
             </div>
-            
+
             <div className="group">
               <Link href="/products" className="block">
                 <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-200 group-hover:from-emerald-600 group-hover:to-emerald-700">
@@ -449,7 +450,7 @@ export default function Dashboard() {
                 </div>
               </Link>
             </div>
-            
+
             <div className="group">
               <Link href="/reports" className="block">
                 <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-200 group-hover:from-purple-600 group-hover:to-purple-700">
@@ -532,8 +533,8 @@ export default function Dashboard() {
                           <Badge
                             className={
                               stockStatus.color === 'success' ? 'bg-green-100 text-green-800' :
-                              stockStatus.color === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
+                                stockStatus.color === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
                             }
                           >
                             {stockStatus.text}
@@ -626,8 +627,8 @@ export default function Dashboard() {
                           <Badge
                             className={
                               stockStatus.color === 'success' ? 'bg-green-100 text-green-800' :
-                              stockStatus.color === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
+                                stockStatus.color === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
                             }
                           >
                             {stockStatus.text}

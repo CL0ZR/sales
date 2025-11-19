@@ -194,25 +194,25 @@ export async function POST() {
 
         // Temporarily disable foreign key constraints to handle dependent tables
         db.exec('PRAGMA foreign_keys = OFF');
-        
+
         // Create temporary table to store return records that reference sales
         db.exec(`
           CREATE TEMPORARY TABLE temp_returns AS 
           SELECT * FROM returns WHERE saleId IN (SELECT id FROM sales)
         `);
-        
+
         // Store the return records count to check if we need to restore them
         const returnsCount = db.prepare('SELECT COUNT(*) as count FROM temp_returns').get() as { count: number };
-        
+
         // Drop the returns table temporarily
         if (returnsCount.count > 0) {
           db.exec('DROP TABLE returns');
         }
-        
+
         // Now safely drop and rename the sales table
         db.exec('DROP TABLE sales');
         db.exec('ALTER TABLE sales_new RENAME TO sales');
-        
+
         // Recreate the returns table structure
         if (returnsCount.count > 0) {
           db.exec(`
@@ -232,7 +232,7 @@ export async function POST() {
               FOREIGN KEY (productId) REFERENCES products(id)
             )
           `);
-          
+
           // Copy back the return records
           db.exec(`
             INSERT INTO returns (id, saleId, productId, returnedQuantity, returnedWeight, 
@@ -241,7 +241,7 @@ export async function POST() {
                    weightUnit, unitPrice, totalRefund, reason, returnDate, processedBy
             FROM temp_returns
           `);
-          
+
           // Drop the temporary table
           db.exec('DROP TABLE temp_returns');
         } else {
@@ -273,7 +273,7 @@ export async function POST() {
         db.exec('CREATE INDEX IF NOT EXISTS idx_returns_date ON returns(returnDate)');
         db.exec('CREATE INDEX IF NOT EXISTS idx_returns_product ON returns(productId)');
         db.exec('CREATE INDEX IF NOT EXISTS idx_returns_sale ON returns(saleId)');
-        
+
         // Re-enable foreign key constraints
         db.exec('PRAGMA foreign_keys = ON');
 

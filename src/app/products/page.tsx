@@ -353,7 +353,7 @@ export default function ProductsAndSales() {
         duration: 5000,
         action: {
           label: "إغلاق",
-          onClick: () => {}, // Manual dismiss
+          onClick: () => { }, // Manual dismiss
         },
       });
     }
@@ -589,16 +589,15 @@ export default function ProductsAndSales() {
                         !isLowStock(product)
                           ? "default"
                           : !isOutOfStock(product)
-                          ? "secondary"
-                          : "destructive"
+                            ? "secondary"
+                            : "destructive"
                       }
-                      className={`font-semibold ${
-                        !isLowStock(product)
+                      className={`font-semibold ${!isLowStock(product)
                           ? "bg-emerald-100 text-emerald-700"
                           : !isOutOfStock(product)
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
                     >
                       {formatMeasurement(product)}
                     </Badge>
@@ -745,7 +744,7 @@ export default function ProductsAndSales() {
                             السعر:{" "}
                             {formatCurrency(
                               selectedProduct.salePrice -
-                                (selectedProduct.discount || 0),
+                              (selectedProduct.discount || 0),
                               selectedProduct.currency
                             )}
                           </p>
@@ -816,9 +815,8 @@ export default function ProductsAndSales() {
                               : parseFloat(e.target.value) || 0,
                         })
                       }
-                      placeholder={`الحد الأقصى: ${
-                        selectedProduct.weight
-                      } ${getMeasurementUnit(selectedProduct)}`}
+                      placeholder={`الحد الأقصى: ${selectedProduct.weight
+                        } ${getMeasurementUnit(selectedProduct)}`}
                     />
                   </div>
                 )}
@@ -864,10 +862,10 @@ export default function ProductsAndSales() {
                       saleFormData.saleType === "wholesale"
                         ? Math.max(0, selectedProduct.wholesalePrice)
                         : Math.max(
-                            0,
-                            selectedProduct.salePrice -
-                              (selectedProduct.discount || 0)
-                          ),
+                          0,
+                          selectedProduct.salePrice -
+                          (selectedProduct.discount || 0)
+                        ),
                       selectedProduct.currency
                     )}`}
                   />
@@ -1275,7 +1273,7 @@ export default function ProductsAndSales() {
                     <p className="text-2xl font-bold text-emerald-900">
                       {formatCurrency(
                         detailsProduct.salePrice *
-                          (1 - detailsProduct.discount / 100),
+                        (1 - detailsProduct.discount / 100),
                         detailsProduct.currency
                       )}
                     </p>
@@ -1316,8 +1314,8 @@ export default function ProductsAndSales() {
                       {detailsProduct.measurementType === "quantity"
                         ? `${detailsProduct.minQuantity} قطعة`
                         : `${detailsProduct.minWeight} ${getMeasurementUnit(
-                            detailsProduct
-                          )}`}
+                          detailsProduct
+                        )}`}
                     </p>
                   </div>
                   <div>
@@ -1327,22 +1325,22 @@ export default function ProductsAndSales() {
                         isOutOfStock(detailsProduct)
                           ? "destructive"
                           : isLowStock(detailsProduct)
-                          ? "secondary"
-                          : "default"
+                            ? "secondary"
+                            : "default"
                       }
                       className={
                         isOutOfStock(detailsProduct)
                           ? "bg-red-100 text-red-700"
                           : isLowStock(detailsProduct)
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-emerald-100 text-emerald-700"
                       }
                     >
                       {isOutOfStock(detailsProduct)
                         ? "نفد المخزون"
                         : isLowStock(detailsProduct)
-                        ? "مخزون منخفض"
-                        : "متوفر"}
+                          ? "مخزون منخفض"
+                          : "متوفر"}
                     </Badge>
                   </div>
                 </div>

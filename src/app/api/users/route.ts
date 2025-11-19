@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
       // جلب مستخدم محدد
       const user = getUserById(id);
       if (!user) {
-        return NextResponse.json({ 
-          success: false, 
-          message: 'المستخدم غير موجود' 
+        return NextResponse.json({
+          success: false,
+          message: 'المستخدم غير موجود'
         }, { status: 404 });
       }
 
@@ -26,13 +26,13 @@ export async function GET(request: NextRequest) {
     const users = getAllUsers();
     // إزالة كلمات المرور من البيانات المرتجعة
     const usersWithoutPassword = users.map(({ password, ...user }) => user);
-    
+
     return NextResponse.json(usersWithoutPassword);
   } catch (error) {
     console.error('Error fetching users:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Failure to fetch users' 
+    return NextResponse.json({
+      success: false,
+      message: 'Failure to fetch users'
     }, { status: 500 });
   }
 }
@@ -43,9 +43,9 @@ export async function POST(request: NextRequest) {
 
     // التحقق من صحة البيانات
     if (!userData.username || !userData.password) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Username and password are required' 
+      return NextResponse.json({
+        success: false,
+        message: 'Username and password are required'
       }, { status: 400 });
     }
 
@@ -63,9 +63,9 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Failure to create user' 
+    return NextResponse.json({
+      success: false,
+      message: 'Failure to create user'
     }, { status: 500 });
   }
 }
@@ -114,29 +114,29 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'User ID is required' 
+      return NextResponse.json({
+        success: false,
+        message: 'User ID is required'
       }, { status: 400 });
     }
 
     const success = deleteUser(id);
     if (!success) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Failure to delete user' 
+      return NextResponse.json({
+        success: false,
+        message: 'Failure to delete user'
       }, { status: 500 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'User deleted successfully' 
+    return NextResponse.json({
+      success: true,
+      message: 'User deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting user:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Failure to delete user' 
+    return NextResponse.json({
+      success: false,
+      message: 'Failure to delete user'
     }, { status: 500 });
   }
 }
