@@ -187,12 +187,6 @@ export default function UserManagement() {
           <p className="text-gray-600">إنشاء وإدارة حسابات المستخدمين</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/debt-book">
-            <Button variant="outline" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              إدارة دفتر الديون
-            </Button>
-          </Link>
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">

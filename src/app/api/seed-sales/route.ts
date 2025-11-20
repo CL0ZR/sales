@@ -114,11 +114,17 @@ export async function POST() {
         const totalPrice = unitPrice * soldAmount;
         const finalPrice = totalPrice;
 
-        // Random date within last 30 days
-        const daysAgo = Math.floor(Math.random() * 30);
-        const saleDate = new Date();
-        saleDate.setDate(saleDate.getDate() - daysAgo);
-        saleDate.setHours(Math.floor(Math.random() * 12) + 8); // Between 8 AM and 8 PM
+        // Random date within current year (from Jan 1 to today)
+        const currentYear = new Date().getFullYear();
+        const startOfYear = new Date(currentYear, 0, 1); // January 1st of current year
+        const today = new Date();
+
+        // Random timestamp between start of year and today
+        const randomTime = startOfYear.getTime() + Math.random() * (today.getTime() - startOfYear.getTime());
+        const saleDate = new Date(randomTime);
+
+        // Set random time between 8 AM and 8 PM
+        saleDate.setHours(Math.floor(Math.random() * 12) + 8);
         saleDate.setMinutes(Math.floor(Math.random() * 60));
 
         // Create sale
