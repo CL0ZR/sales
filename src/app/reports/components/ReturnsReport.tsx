@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Undo2, Package, TrendingDown, Printer } from 'lucide-react';
+import { Undo2, Package, TrendingDown, Printer, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Return } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -22,6 +23,7 @@ interface ReturnsReportProps {
 export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportProps) {
   const { formatCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -79,6 +81,45 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
       topReason: topReason ? { reason: topReason[0], count: topReason[1] } : null
     };
   }, [filteredReturns]);
+
+  // Selection handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const pageIds = new Set(paginatedData.map(item => item.id));
+      setSelectedIds(prev => new Set([...prev, ...pageIds]));
+    } else {
+      const pageIds = new Set(paginatedData.map(item => item.id));
+      setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        pageIds.forEach(id => newSet.delete(id));
+        return newSet;
+      });
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const getSelectedReturns = () => {
+    return filteredReturns.filter(ret => selectedIds.has(ret.id));
+  };
+
+  // Check if all items on current page are selected
+  const isPageFullySelected = paginatedData.length > 0 && paginatedData.every(item => selectedIds.has(item.id));
+  const isPagePartiallySelected = paginatedData.some(item => selectedIds.has(item.id)) && !isPageFullySelected;
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -165,12 +206,45 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
         </CardContent>
       </Card>
 
-      {/* Print Button */}
-      <div className="flex justify-end">
-        <Button onClick={() => onPrintClick(filteredReturns)} variant="outline" className="flex items-center gap-2">
-          <Printer className="h-4 w-4" />
-          طباعة تقرير الإرجاعات
-        </Button>
+      {/* Print Buttons */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <Badge variant="secondary" className="text-sm">
+                {selectedIds.size} صف محدد
+              </Badge>
+              <Button
+                onClick={handleClearSelection}
+                variant="ghost"
+                size="sm"
+                className="h-8"
+              >
+                <X className="h-4 w-4 ml-1" />
+                إلغاء التحديد
+              </Button>
+            </>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => onPrintClick(filteredReturns)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            طباعة الكل
+          </Button>
+          {selectedIds.size > 0 && (
+            <Button
+              onClick={() => onPrintClick(getSelectedReturns())}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            >
+              <Printer className="h-4 w-4" />
+              طباعة المحدد ({selectedIds.size})
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Returns Table */}
@@ -186,7 +260,17 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">#</TableHead>
+                  <TableHead className="w-12">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={isPageFullySelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="تحديد الكل"
+                        className="border-2 border-gray-500"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right">ت</TableHead>
                   <TableHead className="text-right">التاريخ</TableHead>
                   <TableHead className="text-right">رقم البيع</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
@@ -199,7 +283,20 @@ export default function ReturnsReport({ returns, onPrintClick }: ReturnsReportPr
               <TableBody>
                 {paginatedData.map((ret, index) => {
                   return (
-                    <TableRow key={ret.id}>
+                    <TableRow
+                      key={ret.id}
+                      className={selectedIds.has(ret.id) ? 'bg-blue-50' : ''}
+                    >
+                      <TableCell className="w-12">
+                        <div className="flex items-center justify-center">
+                          <Checkbox
+                            checked={selectedIds.has(ret.id)}
+                            onCheckedChange={(checked) => handleSelectRow(ret.id, checked as boolean)}
+                            aria-label={`تحديد ${ret.product.name}`}
+                            className="border-2 border-gray-500"
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right font-medium">
                         {startIndex + index + 1}
                       </TableCell>

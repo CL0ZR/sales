@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Package, AlertTriangle, CheckCircle, XCircle, TrendingDown, Printer } from 'lucide-react';
+import { Package, AlertTriangle, CheckCircle, XCircle, TrendingDown, Printer, X } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
   const [searchTerm, setSearchTerm] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'good' | 'low' | 'out'>('all');
   const [measurementFilter, setMeasurementFilter] = useState<'all' | 'quantity' | 'weight'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -88,6 +90,45 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
 
     return { totalValue, outOfStock, lowStock, goodStock };
   }, [filteredProducts]);
+
+  // Selection handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const pageIds = new Set(paginatedData.map(item => item.id));
+      setSelectedIds(prev => new Set([...prev, ...pageIds]));
+    } else {
+      const pageIds = new Set(paginatedData.map(item => item.id));
+      setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        pageIds.forEach(id => newSet.delete(id));
+        return newSet;
+      });
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const getSelectedProducts = () => {
+    return filteredProducts.filter(product => selectedIds.has(product.id));
+  };
+
+  // Check if all items on current page are selected
+  const isPageFullySelected = paginatedData.length > 0 && paginatedData.every(item => selectedIds.has(item.id));
+  const isPagePartiallySelected = paginatedData.some(item => selectedIds.has(item.id)) && !isPageFullySelected;
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -207,12 +248,45 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
         </CardContent>
       </Card>
 
-      {/* Print Button */}
-      <div className="flex justify-end">
-        <Button onClick={() => onPrintClick(filteredProducts)} variant="outline" className="flex items-center gap-2">
-          <Printer className="h-4 w-4" />
-          طباعة تقرير المخزون
-        </Button>
+      {/* Print Buttons */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <Badge variant="secondary" className="text-sm">
+                {selectedIds.size} صف محدد
+              </Badge>
+              <Button
+                onClick={handleClearSelection}
+                variant="ghost"
+                size="sm"
+                className="h-8"
+              >
+                <X className="h-4 w-4 ml-1" />
+                إلغاء التحديد
+              </Button>
+            </>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => onPrintClick(filteredProducts)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            طباعة الكل
+          </Button>
+          {selectedIds.size > 0 && (
+            <Button
+              onClick={() => onPrintClick(getSelectedProducts())}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            >
+              <Printer className="h-4 w-4" />
+              طباعة المحدد ({selectedIds.size})
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Inventory Table */}
@@ -228,7 +302,17 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">#</TableHead>
+                  <TableHead className="w-12">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={isPageFullySelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="تحديد الكل"
+                        className="border-2 border-gray-500"
+                      />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right">ت</TableHead>
                   <TableHead className="text-right">المنتج</TableHead>
                   <TableHead className="text-right">الفئة</TableHead>
                   <TableHead className="text-right">القياس</TableHead>
@@ -247,7 +331,20 @@ export default function InventoryReport({ products, onPrintClick }: InventoryRep
                     : (product.weight || 0) * product.wholesalePrice;
 
                   return (
-                    <TableRow key={product.id}>
+                    <TableRow
+                      key={product.id}
+                      className={selectedIds.has(product.id) ? 'bg-blue-50' : ''}
+                    >
+                      <TableCell className="w-12">
+                        <div className="flex items-center justify-center">
+                          <Checkbox
+                            checked={selectedIds.has(product.id)}
+                            onCheckedChange={(checked) => handleSelectRow(product.id, checked as boolean)}
+                            aria-label={`تحديد ${product.name}`}
+                            className="border-2 border-gray-500"
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right font-medium">
                         {startIndex + index + 1}
                       </TableCell>

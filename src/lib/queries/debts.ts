@@ -228,12 +228,13 @@ export function createDebt(debt: Omit<Debt, 'id' | 'createdAt' | 'updatedAt' | '
     now
   );
 
-  return {
-    ...debt,
-    id,
-    createdAt: new Date(now),
-    updatedAt: new Date(now),
-  };
+  // Fetch the complete debt with customer information
+  const completeDebt = getDebtById(id);
+  if (!completeDebt) {
+    throw new Error(`Failed to fetch created debt with id ${id}`);
+  }
+
+  return completeDebt;
 }
 
 // Update debt

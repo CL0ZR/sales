@@ -10,7 +10,9 @@ export async function POST() {
 
     // Check if data already exists
     const existingProducts = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
-    if (existingProducts.count > 0) {
+    const existingCategories = db.prepare('SELECT COUNT(*) as count FROM categories').get() as { count: number };
+
+    if (existingProducts.count > 0 || existingCategories.count > 0) {
       return NextResponse.json({
         success: false,
         message: 'قاعدة البيانات تحتوي بالفعل على بيانات. استخدم زر "إفراغ قاعدة البيانات" أولاً.',
@@ -67,19 +69,21 @@ export async function POST() {
     // Add categories to database
     const createdCategories = [];
     for (const cat of categories) {
-      const category = addCategory({
-        name: cat.name,
-        description: cat.description,
-        subcategories: cat.subcategories.map((sub, index) => ({
-          id: `${Date.now()}-${index}`,
-          name: sub.name,
-          description: sub.description,
-          categoryId: Date.now().toString(),
-        })),
-      });
-      createdCategories.push(category);
-      // Small delay to ensure unique IDs
-      await new Promise(resolve => setTimeout(resolve, 10));
+      try {
+        const category = addCategory({
+          name: cat.name,
+          description: cat.description,
+          subcategories: cat.subcategories.map(sub => ({
+            name: sub.name,
+            description: sub.description,
+          })),
+        });
+        createdCategories.push(category);
+        // Small delay to ensure unique IDs
+        await new Promise(resolve => setTimeout(resolve, 10));
+      } catch (error) {
+        console.error(`Error adding category ${cat.name}:`, error);
+      }
     }
 
     // Create Products (25 products)

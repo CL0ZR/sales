@@ -328,7 +328,7 @@ export default function UserManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">ت</TableHead>
                     <TableHead className="text-right">المستخدم</TableHead>
                     <TableHead className="text-right">النوع</TableHead>
                     <TableHead className="text-right">الاسم الكامل</TableHead>

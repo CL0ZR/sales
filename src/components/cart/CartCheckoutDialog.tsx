@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle, DollarSign, X } from 'lucide-react';
+import { CheckCircle, DollarSign, X, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -43,6 +44,18 @@ export function CartCheckoutDialog() {
     paymentMethod: 'cash',
     debtCustomerId: '',
     customerName: '',
+  });
+
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
+
+  // Filter customers based on search term
+  const filteredCustomers = state.debtCustomers.filter((customer) => {
+    if (!customerSearchTerm) return true;
+    const searchLower = customerSearchTerm.toLowerCase();
+    return (
+      customer.name.toLowerCase().includes(searchLower) ||
+      (customer.phone && customer.phone.toLowerCase().includes(searchLower))
+    );
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -251,6 +264,20 @@ export function CartCheckoutDialog() {
           {formData.paymentMethod === 'debt' && (
             <div className="space-y-2">
               <Label>اختر العميل *</Label>
+
+              {/* Search Input */}
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="ابحث عن عميل بالاسم أو الهاتف..."
+                  value={customerSearchTerm}
+                  onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
+
+              {/* Customer Select */}
               <Select
                 required
                 value={formData.debtCustomerId}
@@ -269,13 +296,25 @@ export function CartCheckoutDialog() {
                   <SelectValue placeholder="اختر عميل من دفتر الديون" />
                 </SelectTrigger>
                 <SelectContent>
-                  {state.debtCustomers.map((customer) => (
+                  {filteredCustomers.map((customer) => (
                     <SelectItem key={customer.id} value={customer.id}>
                       {customer.name} - {customer.phone}
                     </SelectItem>
                   ))}
+                  {filteredCustomers.length === 0 && customerSearchTerm && (
+                    <div className="p-2 text-center text-sm text-muted-foreground">
+                      لا توجد نتائج
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
+
+              {customerSearchTerm && (
+                <p className="text-xs text-muted-foreground">
+                  عرض {filteredCustomers.length} من {state.debtCustomers.length} عميل
+                </p>
+              )}
+
               {state.debtCustomers.length === 0 && (
                 <p className="text-sm text-amber-600">
                   لا يوجد عملاء في دفتر الديون. يرجى إضافة عميل أولاً.

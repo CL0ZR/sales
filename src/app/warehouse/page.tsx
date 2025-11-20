@@ -967,7 +967,7 @@ export default function Warehouse() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">#</TableHead>
+                      <TableHead className="text-right">ت</TableHead>
                       <TableHead className="text-right">المنتج</TableHead>
                       <TableHead className="text-right">الفئة</TableHead>
                       <TableHead className="text-right">نوع القياس</TableHead>

@@ -396,8 +396,19 @@ export default function ProductsAndSales() {
       selectedProduct.measurementType === "quantity"
         ? saleFormData.quantity
         : saleFormData.weight;
-    const unitPrice =
-      selectedProduct.salePrice * (1 - saleFormData.discount / 100);
+
+    let unitPrice: number;
+
+    if (saleFormData.saleType === "wholesale") {
+      // Wholesale: use wholesalePrice with optional discount
+      unitPrice = selectedProduct.wholesalePrice - (saleFormData.discount || 0);
+    } else {
+      // Retail: use salePrice with product and additional discounts
+      const priceAfterProductDiscount =
+        selectedProduct.salePrice - (selectedProduct.discount || 0);
+      unitPrice = priceAfterProductDiscount - (saleFormData.discount || 0);
+    }
+
     return unitPrice * soldAmount;
   };
 
@@ -1317,8 +1328,7 @@ export default function ProductsAndSales() {
                     </p>
                     <p className="text-2xl font-bold text-emerald-900">
                       {formatCurrency(
-                        detailsProduct.salePrice *
-                        (1 - detailsProduct.discount / 100),
+                        detailsProduct.salePrice - detailsProduct.discount,
                         detailsProduct.currency
                       )}
                     </p>
