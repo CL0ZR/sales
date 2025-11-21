@@ -224,6 +224,21 @@ export default function ProductsAndSales() {
         item => item.product.id === product.id && item.saleType === 'retail'
       );
 
+      // For quantity-based products, validate stock limit before adding
+      if (product.measurementType === 'quantity') {
+        const currentCartQuantity = existingItem ? existingItem.quantity : 0;
+        const newTotalQuantity = currentCartQuantity + 1;
+        const availableStock = getCurrentStock(product);
+
+        if (newTotalQuantity > availableStock) {
+          toast.error(`وصلت للحد الأقصى المتاح من ${product.name}`, {
+            description: `الكمية المتوفرة: ${availableStock} قطعة`,
+            duration: 5000,
+          });
+          return; // Don't add to cart if stock limit exceeded
+        }
+      }
+
       addToCart(product, 'retail', defaultQuantity, defaultWeight, 0);
 
       // For weight-based products, open cart panel for manual weight entry

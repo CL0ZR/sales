@@ -724,9 +724,7 @@ export default function Warehouse() {
                             required
                             min="0"
                             step="1"
-                            value={
-                              formData.quantity === 0 ? "" : formData.quantity
-                            }
+                            value={formData.quantity}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
@@ -798,9 +796,7 @@ export default function Warehouse() {
                               required
                               min="0"
                               step={getInputStep("weight", formData.weightUnit)}
-                              value={
-                                formData.weight === 0 ? "" : formData.weight
-                              }
+                              value={formData.weight}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
