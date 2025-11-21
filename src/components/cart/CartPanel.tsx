@@ -233,7 +233,7 @@ function CartItemCard({ item }: { item: CartItem }) {
               <>
                 <Input
                   type="number"
-                  value={item.weight || 0}
+                  value={item.weight === 0 || item.weight === undefined ? "" : item.weight}
                   onChange={(e) => handleWeightChange(e.target.value)}
                   className="w-24 h-7 text-sm"
                   min="0"
@@ -256,7 +256,7 @@ function CartItemCard({ item }: { item: CartItem }) {
               <span className="text-gray-600">خصم:</span>
               <Input
                 type="number"
-                value={discount}
+                value={discount === 0 ? "" : discount}
                 onChange={(e) => handleDiscountChange(e.target.value)}
                 className="w-20 h-6 text-xs"
                 min="0"

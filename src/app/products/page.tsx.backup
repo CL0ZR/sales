@@ -59,7 +59,7 @@ export default function ProductsAndSales() {
   const { state, addSale, processReturn } = useApp();
   const { products, categories, sales, returns } = state;
   const { formatCurrency } = useCurrency();
-  const { addItem: addToCart, items: cartItems, openCart, isOpen: isCartOpen } = useCart();
+  const { addItem: addToCart, items: cartItems } = useCart();
 
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -217,7 +217,7 @@ export default function ProductsAndSales() {
   const handleAddToCart = (product: Product) => {
     try {
       const defaultQuantity = product.measurementType === 'quantity' ? 1 : 0;
-      const defaultWeight = product.measurementType === 'weight' ? 0.001 : undefined; // Minimal placeholder for weight products
+      const defaultWeight = product.measurementType === 'weight' ? 1 : undefined;
 
       // Check if product already exists in cart
       const existingItem = cartItems.find(
@@ -226,15 +226,7 @@ export default function ProductsAndSales() {
 
       addToCart(product, 'retail', defaultQuantity, defaultWeight, 0);
 
-      // For weight-based products, open cart panel for manual weight entry
-      if (product.measurementType === 'weight') {
-        openCart();
-        if (existingItem) {
-          toast.success(`تم زيادة ${product.name} - افتح السلة لتعديل الوزن`);
-        } else {
-          toast.success(`تمت إضافة ${product.name} - افتح السلة لإدخال الوزن`);
-        }
-      } else if (existingItem) {
+      if (existingItem) {
         toast.success(`تم زيادة الكمية لـ ${product.name}`);
       } else {
         toast.success(`تمت إضافة ${product.name} إلى السلة`);
@@ -370,15 +362,18 @@ export default function ProductsAndSales() {
     const product = products.find((p) => p.barcode === barcode);
 
     if (product) {
-      // Product found - check stock and add to cart
+      // Product found - check stock and open sales modal
       if (isOutOfStock(product)) {
         toast.error("المنتج نفد من المخزون", {
           description: `${product.name} - غير متوفر حالياً`,
           duration: 5000,
         });
       } else {
-        // Add product directly to cart instead of opening sale modal
-        handleAddToCart(product);
+        handleProductSale(product);
+        toast.success("تم العثور على المنتج", {
+          description: product.name,
+          duration: 2000,
+        });
       }
     } else {
       // Product not found - show error toast
@@ -417,9 +412,9 @@ export default function ProductsAndSales() {
     return unitPrice * soldAmount;
   };
 
-  // Auto-focus barcode input on mount and after modal/cart closes
+  // Auto-focus barcode input on mount and after modal closes
   useEffect(() => {
-    if (!isSaleModalOpen && !isDetailsModalOpen && !isReturnModalOpen && !isCartOpen) {
+    if (!isSaleModalOpen && !isDetailsModalOpen && !isReturnModalOpen) {
       // Small delay to avoid interfering with other focus events
       const timer = setTimeout(() => {
         barcodeInputRef.current?.focus();
@@ -427,7 +422,7 @@ export default function ProductsAndSales() {
 
       return () => clearTimeout(timer);
     }
-  }, [isSaleModalOpen, isDetailsModalOpen, isReturnModalOpen, isCartOpen]);
+  }, [isSaleModalOpen, isDetailsModalOpen, isReturnModalOpen]);
 
   return (
     <div className="space-y-6">
@@ -843,7 +838,7 @@ export default function ProductsAndSales() {
                       min="1"
                       step="1"
                       max={selectedProduct.quantity}
-                      value={saleFormData.quantity === 0 ? "" : saleFormData.quantity}
+                      value={saleFormData.quantity}
                       onChange={(e) =>
                         setSaleFormData({
                           ...saleFormData,

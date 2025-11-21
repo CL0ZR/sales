@@ -481,7 +481,7 @@ export default function DebtBookPage() {
                 <Label>المبلغ المدفوع *</Label>
                 <Input
                   type="number"
-                  value={paymentAmount}
+                  value={paymentAmount === "" || paymentAmount === "0" ? "" : paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
                   placeholder="أدخل المبلغ"
                   max={selectedDebt.amountRemaining}

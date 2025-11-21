@@ -749,7 +749,7 @@ export default function Warehouse() {
                             required
                             min="0"
                             step="1"
-                            value={formData.minQuantity}
+                            value={formData.minQuantity === 0 ? "" : formData.minQuantity}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
